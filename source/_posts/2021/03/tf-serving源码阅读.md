@@ -8,13 +8,26 @@ categories:
 - 源码阅读
 ---
 
+# TF-Serving简介
+TensorFlow Serving是一个用于在生产环境中部署机器学习模型的应用系统，原生集成了TensorFlow模型，也可以扩展以应用其他类型的模型和数据。
+
 # TF-Serving架构
 ![tf serving 架构](https://www.tensorflow.org/tfx/serving/images/serving_architecture.svg?hl=zh-cn)
 
+- Servables
+- Loaders
+- Sources
+- Managers
+- Core
 ## Servable
-对模型的抽象，任何能提供算法或数据查询的实体都可以抽象为Servable。
+Servable是TF-Serving核心的对模型的抽象，Servable的大小和粒度都很灵活，任何能提供算法或数据查询的实体都可以抽象为Servable，服务可以是任何类型和接口。Servable不负责管理自己的生命周期，而是交由Manager管理。
 
-### tensorflow.serving.ServableId
+典型的Servables包括：
+- TesnorFlow SavedModelBundle
+- Embeddings查找表或词查找表
+
+### Servable相关的数据结构
+#### tensorflow.serving.ServableId
 ```c++
 struct ServableId{
     string name;
@@ -23,7 +36,7 @@ struct ServableId{
 };
 ```
 
-### tensorflow.serving.ServableData
+#### tensorflow.serving.ServableData
 ```c++
 template<typename T>
 class ServableData{
@@ -39,7 +52,7 @@ private:
 };
 ```
 
-### tensorflow.serving.ServableHandle
+#### tensorflow.serving.ServableHandle
 ```c++
 class UntypedServableHandle{
 public:
@@ -73,7 +86,7 @@ private:
     std::shared_ptr<Loader> loader_;
 };
 ```
-### tensorflow.serving.ServableState
+#### tensorflow.serving.ServableState
 ```c++
 struct ServableState{
     ServableId id;
@@ -87,28 +100,9 @@ struct ServableState{
 };
 ```
 
-## ServerCore
-服务系统的创建和维护，建立HTTP REST Server、GRPC Server和模型管理部分(AspiredVersionManger)之间的关系。
-
-## AspiredVersionManager
-模型管理的上层控制部分，负责执行Source发出的模型管理指令，一部分通过回调的方式由Source调用，一部分由独立线程执行。
-
-## BasicManager
-负责Servable的管理，包括加载、卸载、状态查询、资源跟踪，对外提供如下接口：
-1. ManageServable
-2. LoadServable
-3. UnloadServable
-4. StopManagerServable
-
-提供接口查询servableHandle(GetUntypeServableHandle)，也就是加载好的模型，供http rest或grpc server调用进行推理。
-
-所有受管理的servable都放在ManagedMap里，已经正常加载的servable同时也放在ServingMap进行管理，提供查询接口。
-
-## LoaderHarness
-LoaderHarness对Loader提供状态跟踪，ServingMap和ManagedMap里面保存的都是LoaderHarness对象，只有通过LoaderHarness才能访问Loader 的接口。
 
 ## Loader
-Loader对Servable的生命周期进行控制，包括load/unload接口、资源预估接口等，加载后的Servable也存在Loader里面。
+Loader对Servable的生命周期进行控制，包括load/unload接口、资源预估接口等，加载后的Servable也存在Loader里面。Loader也用于扩展算法和数据后端（Tensorflow是其中一种）。当我们要添加一个新的backends时（如Pytorch等），需要为其实现一个新的Loader，以用于加载、卸载模型。
 
 ```c++
 //表示一个从storage加载的一个SavedModel
@@ -131,15 +125,16 @@ struct SavedModelBundle: public SavedModelBundleInterface{
 };
 ```
 
-
-## Adapter
-Adapter是为了Source转成Loader而引入的抽象，这样server core的实现和具体的平台解耦。
-
-## SourceRouter
-Adapter是平台相关的，每个平台一个Adapter，但是Source适合Servable相关的，这样在Adapter和Source之间存在一对多的关系，Router负责维护这些对应关系。
+### LoaderHarness
+LoaderHarness是对Loader的封装，LoaderHarness负提供Loader的状态跟踪，ServingMap和ManagedMap里面保存的都是LoaderHarness对象，只有通过LoaderHarness才能访问Loader的接口。
 
 ## Source
-Source是对Servable的来源的抽象，比如模型文件是某个模型的Source，Source监控外部资源，发现新的模型版本，并通知Target。
+Source是对Servable的来源的抽象，Source监控外部资源，发现新的模型版本，并通知Target。Source为其提供的Servable的每个可用版本都提供一个Loader实例。
+
+Source可以是：
+- 文件系统，本地或者HDFS
+- RPC
+
 ```c++
 template<typename T>
 class Source{
@@ -197,25 +192,45 @@ private:
     void CallAspiredVersionsCallback(Args&&... args){
         ...;
     }
-   void SetAspiredVersionsCallbackNotifier(std::function<void()> fn) {
+    void SetAspiredVersionsCallbackNotifier(std::function<void()> fn) {
     mutex_lock l(mu_);
     aspired_versions_callback_notifier_ = fn;
     }
 
     mutable mutex mu_;
-
     FileSystemStoragePathSourceConfig config TF_GUARDED_BY(mu_);
-
     AspiredVersionsCallback aspired_versions_callback_ TF_GUARDED_BY(mu_);
-
     std::function<void()> aspired_versions_callback_notifier_ TF_GUARDED_BY(mu_);
-
     using ThreadType = absl::variant<absl::monostate, PeriodicFunction, std::unique_ptr<Thread>>;
     std::unique_ptr<ThreadType> fs_polling_thread_ TF_GUARDED_BY(mu_);
-
     TF_DISALLOW_COPY_AND_ASSIGN(FileSystemStoragePathSource);
 }
 ```
+
+### Adapter
+Adapter是为了Source转成Loader而引入的抽象，这样server core的实现和具体的平台解耦，server core只需要调用LoaderHarness中的方法管理Servable（访问、加载、卸载等）。
+
+### SourceRouter
+Adapter是平台相关的，每个平台一个Adapter，这里的平台指的是TF、Pytorch等。而Source是与Servable相关的，这样在Adapter和Source之间存在一对多的关系，Router负责维护这些对应关系。（这里似乎有些问题，需要仔细看下）
+
+## ServerCore
+服务系统的创建和维护，建立HTTP REST Server、GRPC Server和模型管理部分(AspiredVersionManger)之间的关系。
+
+## AspiredVersionManager
+模型管理的上层控制部分，负责执行Source发出的模型管理指令，一部分通过回调的方式由Source调用，一部分由独立线程执行。
+
+## BasicManager
+负责Servable的管理，包括加载、卸载、状态查询、资源跟踪，对外提供如下接口：
+1. ManageServable
+2. LoadServable
+3. UnloadServable
+4. StopManagerServable
+
+提供接口查询servableHandle(GetUntypeServableHandle)，也就是加载好的模型，供http rest或grpc server调用进行推理。
+
+所有受管理的servable都放在ManagedMap里，已经正常加载的servable同时也放在ServingMap进行管理，提供查询接口。
+
+
 
 ## Target
 Target是和Source对应的抽象概念，AspiredVersionManager、Router都是Target。
