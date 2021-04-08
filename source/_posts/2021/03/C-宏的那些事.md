@@ -7,7 +7,6 @@ categories:
 - C++相关
 ---
 
-
 # 宏定义
 宏定义将一个标识符定义为一个字符串，源代码中的标识符将被指定的字符串替换，这个过程发生在预处理阶段。
 发方
@@ -60,4 +59,149 @@ char ch = CHAR(a); //二者等价
 ```
 当宏中遇到`#`和`##`时，是不能够进行嵌套替换的，不会对`#`和`##`之后宏进行展开。
 
+# 可变参数宏
 
+```c++
+#define VARGS_(_10, _9, _8, _7, _6, _5, _4, _3, _2, _1, N, ...) N
+#define VARGS(...) VARGS_(__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+
+
+#define CONCAT_(a, b) a ## b
+#define CONCAT(a, b) CONCAT_(a, b) // 由于##会阻止宏的展开，因此两次宏替换解决宏的嵌套问题
+
+#define FUNC_3(prefix, name, n) func(prefix, name, n)
+#define FUNC_2(prefix, name) FUNC_3(prefix, name, 1)
+
+#define FUNC(...) CONCAT("FUNC_", VARGS(__VA_ARGS__))(__VA_ARGS__)
+
+
+// 从而实现如下变参宏
+FUNC(prefix, name, 4)
+FUNC(prefix, name)
+```
+
+# 工厂宏
+```c++
+class Any {
+public:
+    Any() : _var_ptr(NULL) {}
+    template<typename T>
+    Any(const T& value) : _var_ptr(new Type<T>(value)) {}
+    Any(const Any& other) : _var_ptr(other._var_ptr ? other._var_ptr->clone() : NULL) {}
+    ~Any() {
+        delete _var_ptr;
+    }
+    template<typename T>
+    T* any_cast() {
+        return _var_ptr ? &static_cast<Type <T>*>(_var_ptr)->_var : NULL;
+    }
+
+private:
+    class Typeless {
+    public:
+        virtual ~Typeless() {}
+        virtual Typeless* clone() const = 0;
+    };
+    /// @brief Type calss template to hold a specific type
+    template<typename T>
+    class Type : public Typeless {
+    public:
+        explicit Type(const T& value) : _var(value) {}
+        virtual Typeless* clone() const {
+            return new Type(_var);
+        }
+        T _var;             ///< The real variable of a specific type
+    };
+    Typeless* _var_ptr;     ///< Typeless variable pointer
+};
+
+struct ConcreteFactory {
+    typedef Any (* FactoryIntf)();  /// a Function Pointer 
+
+    FactoryIntf get_instance;      ///< Function pointer to get instance
+    FactoryIntf get_singleton;     ///< Function pointer to get singleton
+};
+
+typedef std::map<std::string, ConcreteFactory> FactoryMap;
+typedef std::map<std::string, FactoryMap> BaseClassMap;
+
+BaseClassMap& g_factory_map() {
+    static BaseClassMap base_class_map;    
+    return base_class_map;
+}
+
+#define REGISTER_FACTORY(base_class) \
+    class base_class ## Factory { \
+    public: \
+        static base_class *get_instance(const ::std::string &name) { \
+            FactoryMap &map = g_factory_map()[#base_class]; \
+            FactoryMap::iterator iter = map.find(name); \
+            if (iter == map.end()) { \
+                return NULL; \
+            } \
+            Any object = iter->second.get_instance(); \
+            return *(object.any_cast<base_class*>()); \
+        } \
+        static base_class* get_singleton(const ::std::string& name) { \
+            FactoryMap& map = g_factory_map()[#base_class]; \
+            FactoryMap::iterator iter = map.find(name); \
+            if (iter == map.end()) { \
+                return NULL; \
+            }\
+            Any object = iter->second.get_singleton(); \
+            return *(object.any_cast<base_class*>()); \
+        } \
+        static const ::std::string get_uniq_instance_name() { \
+            FactoryMap &map = g_factory_map()[#base_class]; \
+            if (map.empty() || map.size() != 1) { \
+                return ""; \
+            } \
+            return map.begin()->first; \
+        } \
+        static base_class *get_uniq_instance() { \
+            FactoryMap &map = g_factory_map()[#base_class]; \
+            if (map.empty() || map.size() != 1) { \
+                return NULL; \
+            } \
+            Any object = map.begin()->second.get_instance(); \
+            return *(object.any_cast<base_class*>()); \
+        } \
+        static bool is_valid(const ::std::string &name) { \
+            FactoryMap &map = g_factory_map()[#base_class]; \
+            return map.find(name) != map.end(); \
+        } \
+        static std::vector<std::string> list_class() {\
+            std::vector<std::string> ret; \
+            auto &m = g_factory_map()[#base_class]; \
+            for (auto& iter : m) { \
+              ret.emplace_back(iter.first);\
+            }\
+            return ret;\
+        }\
+    }; \
+
+
+#define REGISTER_CLASS(base_class, sub_class) \
+    namespace { \
+    Any sub_class##get_instance() { \
+        return Any(new sub_class()); \
+    } \
+    Any sub_class##get_singleton() { \
+        return Any(Singleton<sub_class>::get()); \
+    } \
+    __attribute__((constructor)) void register_factory_##sub_class() { \
+        FactoryMap &map = g_factory_map()[#base_class]; \
+        if (map.find(#sub_class) == map.end()) { \
+            ConcreteFactory factory = {&sub_class##get_instance, \
+                                                 &sub_class##get_singleton}; \
+            map[#sub_class] = factory; \
+        } \
+    } \
+    }
+
+
+```
+
+```c++
+typedef char (*func)(int); //函数指针
+```
