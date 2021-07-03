@@ -51,7 +51,7 @@ char* str = "hello";
 char* str = STRING(hello);  //二者等价
 
 
-#define CHAR(ch) #ch
+#define CHAR(ch) #@ch
 char ch = 'a';
 char ch = CHAR(a); //二者等价
 
