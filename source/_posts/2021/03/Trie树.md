@@ -85,7 +85,7 @@ bool StartWith(string str){
             return false;
     }
     return true;
-}    
+}
 ```
 
 
