@@ -10,6 +10,7 @@ categories:
 ## FlagRegistry
 
 ## AddFlagValidator
+
 ```c++
 bool AddFlagValidator(const void* flag_ptr, ValidateFnProto validate_fn_proto) {
     FlagRegistry* const registry = FlagRegistry::GlobalRegistry();
