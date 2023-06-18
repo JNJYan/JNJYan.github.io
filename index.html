@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
 <meta name="theme-color" content="#222">
-<meta name="generator" content="Hexo 5.4.2">
+<meta name="generator" content="Hexo 6.3.0">
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
@@ -264,7 +264,7 @@
   
   
   <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
-    <link itemprop="mainEntityOfPage" href="https://jnjyan.github.io/8ce42490687f/">
+    <link itemprop="mainEntityOfPage" href="https://jnjyan.github.io/653b70b6c259/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="image" content="/images/%E9%BB%91%E7%99%BD.jpg">
@@ -278,7 +278,7 @@
       <header class="post-header">
         <h2 class="post-title" itemprop="name headline">
           
-            <a href="/8ce42490687f/" class="post-title-link" itemprop="url">未命名</a>
+            <a href="/653b70b6c259/" class="post-title-link" itemprop="url">Paper Reading List</a>
         </h2>
 
         <div class="post-meta">
@@ -289,11 +289,11 @@
               <span class="post-meta-item-text">发表于</span>
               
 
-              <time title="创建时间：2023-06-18 15:44:35 / 修改时间：16:09:11" itemprop="dateCreated datePublished" datetime="2023-06-18T15:44:35+08:00">2023-06-18</time>
+              <time title="创建时间：2023-06-18 16:31:58 / 修改时间：16:32:50" itemprop="dateCreated datePublished" datetime="2023-06-18T16:31:58+08:00">2023-06-18</time>
             </span>
 
           
-            <span id="/8ce42490687f/" class="post-meta-item leancloud_visitors" data-flag-title="" title="阅读次数">
+            <span id="/653b70b6c259/" class="post-meta-item leancloud_visitors" data-flag-title="Paper Reading List" title="阅读次数">
               <span class="post-meta-item-icon">
                 <i class="fa fa-eye"></i>
               </span>
@@ -308,8 +308,8 @@
       </span>
       <span class="post-meta-item-text">Valine：</span>
     
-    <a title="valine" href="/8ce42490687f/#valine-comments" itemprop="discussionUrl">
-      <span class="post-comments-count valine-comment-count" data-xid="/8ce42490687f/" itemprop="commentCount"></span>
+    <a title="valine" href="/653b70b6c259/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/653b70b6c259/" itemprop="commentCount"></span>
     </a>
   </span>
   
@@ -324,7 +324,7 @@
     <div class="post-body" itemprop="articleBody">
 
       
-          <h1 id="Paper-Reading-List"><a href="#Paper-Reading-List" class="headerlink" title="Paper Reading List"></a>Paper Reading List</h1><h2 id="1-Learning-Elastic-Embeddings-for-Customizing-On-Device-Recommenders-KDD2021"><a href="#1-Learning-Elastic-Embeddings-for-Customizing-On-Device-Recommenders-KDD2021" class="headerlink" title="1. Learning Elastic Embeddings for Customizing On-Device Recommenders(KDD2021)"></a>1. Learning Elastic Embeddings for Customizing On-Device Recommenders(KDD2021)</h2><h3 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h3><p>服务器通常有着固定的内存和性能，因此我们可以训练一个模型，找到能够内存和计算能力适配这个模型的机器即可。不同于在服务器上进行推荐，边缘计算的难点在于边缘设备的性能相差较大，智能设备的内存大小不一，不可能为每一个设备都训练一个模型。</p>
+          <h2 id="1-Learning-Elastic-Embeddings-for-Customizing-On-Device-Recommenders-KDD2021"><a href="#1-Learning-Elastic-Embeddings-for-Customizing-On-Device-Recommenders-KDD2021" class="headerlink" title="1. Learning Elastic Embeddings for Customizing On-Device Recommenders(KDD2021)"></a>1. Learning Elastic Embeddings for Customizing On-Device Recommenders(KDD2021)</h2><h3 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h3><p>服务器通常有着固定的内存和性能，因此我们可以训练一个模型，找到能够内存和计算能力适配这个模型的机器即可。不同于在服务器上进行推荐，边缘计算的难点在于边缘设备的性能相差较大，智能设备的内存大小不一，不可能为每一个设备都训练一个模型。</p>
 <p>由于隐私和网络延迟的原因，现在更倾向于在边缘设备而非云服务器上部署推荐服务。在边缘设备上构建推荐系统的常用做法是压缩嵌入表示。本文提出了一种轻量级训练范式，核心思想是为每个item构造一个弹性embedding，弹性embedding是自动搜索出的由一组embedding-block的拼接。提出了一种RULE(Recommendation with Universally Learned Elastic Embeddings)方法，为了增强embeding-block的表示，在学习embedding-block时迫使其趋向于多样化；然后设计了基于性能估计的渐进搜索方法，允许在任何内存限制下来学习有效的弹性embedding。</p>
 <h3 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h3><p>为了实现基于边缘计算的推荐系统，受限于边缘设备的内存大小，模型的参数数量以及embedding的维度需要有所限制，大部分工作都是基于潜在因子模型(LFM)来进行的，例如矩阵分解。主要思路是将每个user和item表示成embedding，然后通过相似度计算或者网络结构来计算两者的匹配得分，由于存在大量的类别特征，因此LFM模型的主要参数是embedding而非模型weights和biases。因此大多数工作都是压缩embedding的维度从而减小模型的大小。</p>
 <p>早期研究采用离散哈希将实值嵌入转换为二进制，以两者的汉明距离来衡量user和item的相似性，由于转换过程中的信息丢失，使得二进制编码的表示效果极差，远不如普通的矩阵分解。</p>
@@ -332,8 +332,8 @@
 <p>尽管NAS(神经架构搜索)能够缓解构建模型的困难，但为了满足新的内存约束，往往还是需要重新训练，NAS搜索并训练得到的模型是针对一个特定的内存进行优化的。</p>
 <h3 id="Idea"><a href="#Idea" class="headerlink" title="Idea"></a>Idea</h3><p>边缘设备中一般只能获取到用户自己的嵌入表示，因此本文主要对item的embedding进行压缩，将完整的item embedding视为较小的embedding-block的串联，与组合嵌入的区别在于，每个item的embedding-block并不是共享的。组合嵌入表示可能存在一个候选的元嵌入集合，item的嵌入表示则是由这个元嵌入集合中的元嵌入组合而成，而本文的方法中的embedding-block并非是多个item共享的。</p>
 <p>弹性embedding可以选择使用哪些embedding-block以及用多少embedding-block，从而控制item嵌入所占用的内存大小。</p>
-<p>在所有item的嵌入空间进行搜索是不切实际的，因此考虑对item进行分组，同一group内的item共享embedding-block，从而缩小搜索空间，在训练时，增加一个多样性驱动的正则化，以鼓励embedding-block的多样性，提出了一种基于性能估计的进化搜索方法。为了加快搜索，在确定分配给每个group的embedding-block的数量时引入高斯先验，使得搜索函数在搜索重要/不重要的item时选取大/小维度的嵌入，同时保留其他group的嵌入维度。</p>
-<h2 id="2-Disposable-Linear-Bandits-for-Online-Recommendations"><a href="#2-Disposable-Linear-Bandits-for-Online-Recommendations" class="headerlink" title="2. Disposable Linear Bandits for Online Recommendations"></a>2. Disposable Linear Bandits for Online Recommendations</h2><h3 id="多臂老虎机-Multi-Arms-Bandits"><a href="#多臂老虎机-Multi-Arms-Bandits" class="headerlink" title="多臂老虎机(Multi-Arms Bandits)"></a>多臂老虎机(Multi-Arms Bandits)</h3><p>多臂老虎机可以看作是一组实分布$B={R_1,\dots,R_k}$，第i杆奖励服从分布$R_i$，${}$</p>
+<p>在所有item的嵌入空间进行搜索是不切实际的，因此考虑对item进行分组，同一group内的item共享embedding-block，从而缩小搜索空间，在训练时，增加一个多样性驱动的正则化，以鼓励embedding-block的多样性，提出了一种基于性能估计的进化搜索方法。为了加快搜索，在确定分配给每个group的embedding-block的数量时引入高斯先验，使得搜索函数在搜索重要&#x2F;不重要的item时选取大&#x2F;小维度的嵌入，同时保留其他group的嵌入维度。</p>
+<h2 id="2-Disposable-Linear-Bandits-for-Online-Recommendations"><a href="#2-Disposable-Linear-Bandits-for-Online-Recommendations" class="headerlink" title="2. Disposable Linear Bandits for Online Recommendations"></a>2. Disposable Linear Bandits for Online Recommendations</h2><h3 id="多臂老虎机-Multi-Arms-Bandits"><a href="#多臂老虎机-Multi-Arms-Bandits" class="headerlink" title="多臂老虎机(Multi-Arms Bandits)"></a>多臂老虎机(Multi-Arms Bandits)</h3><p>多臂老虎机可以看作是一组实分布$B&#x3D;{R_1,\dots,R_k}$，第i杆奖励服从分布$R_i$，${}$</p>
 <h2 id="阿里淘宝首猜-（长序列建模）"><a href="#阿里淘宝首猜-（长序列建模）" class="headerlink" title="阿里淘宝首猜 （长序列建模）"></a>阿里淘宝首猜 （长序列建模）</h2><p><img src="/images/%E9%98%BF%E9%87%8C%E6%B7%98%E5%AE%9D%E9%A6%96%E7%8C%9C%E6%9E%B6%E6%9E%84.png" alt="淘宝首猜架构"></p>
 <h3 id="召回"><a href="#召回" class="headerlink" title="召回"></a>召回</h3><h3 id="粗排"><a href="#粗排" class="headerlink" title="粗排"></a>粗排</h3><p>双塔内积，十万量级，用户侧在线计算，商品侧离线计算。<br><strong>缺点</strong>：表达能力受限，内积模型无法加入交叉特征，部署一致性要求高。<br>天然bais：训练数据来源于曝光，而实际预测数据来源于召回。</p>
 <h4 id="超长序列建模（两年，上万）"><a href="#超长序列建模（两年，上万）" class="headerlink" title="超长序列建模（两年，上万）"></a>超长序列建模（两年，上万）</h4><ul>
@@ -365,7 +365,7 @@
 </li>
 <li>结构化属性倒排索引(SIM-hard,UBR4CTR,LALI)<ul>
 <li>思想是根据商品推荐类目体系离线构建倒排，在线查询</li>
-<li>人工设计的结构化属性和点击率/转化率的预估目标有较大的gap</li>
+<li>人工设计的结构化属性和点击率&#x2F;转化率的预估目标有较大的gap</li>
 <li>内容推荐、短视频推荐没有商品推荐中比较规范的类目结构化属性</li>
 </ul>
 </li>
@@ -376,7 +376,7 @@
 <li>Local-sensitive hashing 一种高维向量空间快速检索k近邻的方法，通过多轮lsh提升精度，simHash是其二值化的特殊形式</li>
 </ul>
 </li>
-<li>SimHash Attention<br>  多轮LSH进行哈希，hash结果为0/1二进制位，采用汉明距离度量（count(xor)）</li>
+<li>SimHash Attention<br>  多轮LSH进行哈希，hash结果为0&#x2F;1二进制位，采用汉明距离度量（count(xor)）</li>
 <li>优势<br>  将内积attention转换为LSH attention，Query通过复杂内积运算对key检索的过程转化为高效的二进制运算。</li>
 </ul>
 <h4 id="ETA模型"><a href="#ETA模型" class="headerlink" title="ETA模型"></a>ETA模型</h4><h2 id="网易云音乐广告系统"><a href="#网易云音乐广告系统" class="headerlink" title="网易云音乐广告系统"></a>网易云音乐广告系统</h2><h3 id="广告系统介绍"><a href="#广告系统介绍" class="headerlink" title="广告系统介绍"></a>广告系统介绍</h3><h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
@@ -390,9 +390,9 @@
 </ul>
 <h5 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h5><ul>
 <li>引入拍卖机制</li>
-<li>eCPM = pCTR <em>Price</em> 1000，每千次曝光可以获得的广告收入</li>
+<li>eCPM &#x3D; pCTR <em>Price</em> 1000，每千次曝光可以获得的广告收入</li>
 </ul>
-<h3 id="CTR"><a href="#CTR" class="headerlink" title="CTR"></a>CTR</h3><h4 id="浅层模型"><a href="#浅层模型" class="headerlink" title="浅层模型"></a>浅层模型</h4><p><img src="images/%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90%E5%B9%BF%E5%91%8A%E6%B5%85%E5%B1%82%E6%A8%A1%E5%9E%8B.png" alt="网易云音乐广告浅层模型"></p>
+<h3 id="CTR"><a href="#CTR" class="headerlink" title="CTR"></a>CTR</h3><h4 id="浅层模型"><a href="#浅层模型" class="headerlink" title="浅层模型"></a>浅层模型</h4><p><img src="/images/%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90%E5%B9%BF%E5%91%8A%E6%B5%85%E5%B1%82%E6%A8%A1%E5%9E%8B.png" alt="网易云音乐广告浅层模型"></p>
 <ol>
 <li><p>样本选取<br>客户端区分，ios和android分端训练，很显然的道理，客户端界面不同，用户点击习惯也不同</p>
 </li>
