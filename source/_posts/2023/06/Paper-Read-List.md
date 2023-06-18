@@ -1,4 +1,9 @@
-# Paper Reading List
+---
+title: Paper Reading List
+date: 2023-06-18 16:31:58
+tags:
+categories:
+---
 
 ## 1. Learning Elastic Embeddings for Customizing On-Device Recommenders(KDD2021)
 
@@ -114,7 +119,7 @@
 
 #### 浅层模型
 
-![网易云音乐广告浅层模型](images/网易云音乐广告浅层模型.png)
+![网易云音乐广告浅层模型](/images/网易云音乐广告浅层模型.png)
 
 1. 样本选取
 客户端区分，ios和android分端训练，很显然的道理，客户端界面不同，用户点击习惯也不同
