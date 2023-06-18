@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jnjyan.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","width":250,"display":"hide","padding":12,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="头文件self-contained头文件头文件需要自给自足，头文件本身应当是能编译的（个人理解时在没有源文件.cxx的情况也能编译通过）。 头文件应当用#define保护，并包含其所需要的所有其他头文件。 模板和内联函数的定义和声明应当处于同一文件内。 define保护所有头文件都应该使用#define防止文件被多重包含，并且为了保证唯一性，宏命名应当基于所在项目源码的全路径，格式应当为&lt;P">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Google C++风格指南">
+<meta property="og:url" content="https://jnjyan.github.io/0de110b700af/index.html">
+<meta property="og:site_name" content="Black Eye Galaxy">
+<meta property="og:description" content="头文件self-contained头文件头文件需要自给自足，头文件本身应当是能编译的（个人理解时在没有源文件.cxx的情况也能编译通过）。 头文件应当用#define保护，并包含其所需要的所有其他头文件。 模板和内联函数的定义和声明应当处于同一文件内。 define保护所有头文件都应该使用#define防止文件被多重包含，并且为了保证唯一性，宏命名应当基于所在项目源码的全路径，格式应当为&lt;P">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-03-24T09:53:57.000Z">
+<meta property="article:modified_time" content="2023-06-18T08:13:41.966Z">
+<meta property="article:author" content="JNJYan">
+<meta property="article:tag" content="C++编码规范">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://jnjyan.github.io/0de110b700af/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>Google C++风格指南 | Black Eye Galaxy</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?223443aa6efb3158acac1d42a993f246";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Black Eye Galaxy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jnjyan.github.io/0de110b700af/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/%E9%BB%91%E7%99%BD.jpg">
+      <meta itemprop="name" content="JNJYan">
+      <meta itemprop="description" content="以梦为马，越骑越傻">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Black Eye Galaxy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Google C++风格指南
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-03-24 17:53:57" itemprop="dateCreated datePublished" datetime="2021-03-24T17:53:57+08:00">2021-03-24</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-06-18 16:13:41" itemprop="dateModified" datetime="2023-06-18T16:13:41+08:00">2023-06-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/C/" itemprop="url" rel="index"><span itemprop="name">C++</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/0de110b700af/" class="post-meta-item leancloud_visitors" data-flag-title="Google C++风格指南" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/0de110b700af/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/0de110b700af/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="头文件"><a href="#头文件" class="headerlink" title="头文件"></a>头文件</h2><h3 id="self-contained头文件"><a href="#self-contained头文件" class="headerlink" title="self-contained头文件"></a>self-contained头文件</h3><p>头文件需要自给自足，头文件本身应当是能编译的（个人理解时在没有源文件<code>.cxx</code>的情况也能编译通过）。</p>
+<p>头文件应当用<code>#define</code>保护，并包含其所需要的所有其他头文件。</p>
+<p>模板和内联函数的定义和声明应当处于同一文件内。</p>
+<h3 id="define保护"><a href="#define保护" class="headerlink" title="define保护"></a>define保护</h3><p>所有头文件都应该使用<code>#define</code>防止文件被多重包含，并且为了保证唯一性，宏命名应当基于所在项目源码的全路径，格式应当为<code>&lt;PROJECT&gt;_&lt;PATH&gt;_&lt;FILE&gt;_H_</code>。</p>
+<h3 id="引入所有使用的头文件"><a href="#引入所有使用的头文件" class="headerlink" title="引入所有使用的头文件"></a>引入所有使用的头文件</h3><p>不要依赖于<code>include</code>传递，如果<code>foo.cxx</code>文件使用了<code>bar.h</code>中的符号，就应当在<code>foo.cxx</code>中引入<code>bar.h</code>，即使在<code>bar.h</code>已经引入了。</p>
+<p>也就是说，尽量在源文件中引入库，而不是在对应的头文件中引入，目的是为了减少引入依赖。例如当<code>A.cxx</code>依赖于<code>B.h</code>时，对<code>B.h</code>的任何修改都会导致<code>A.cxx</code>的重新构建，而此时<code>B.cxx</code>依赖于<code>C.h</code>，那么我们现在有两个选择，一是在<code>B.cxx</code>中引入<code>C.h</code>，二是在<code>B.h</code>中引入<code>C.h</code>。若选择第二种，我们对<code>C.h</code>的任何修改都会导致<code>A.cxx</code>的重新构建，若选择第一种，则不会触发<code>A.cxx</code>的重新构建。</p>
+<h3 id="前置声明"><a href="#前置声明" class="headerlink" title="前置声明"></a>前置声明</h3><p>前置声明是指类、函数和模板不带有定义的纯粹声明，应当避免使用前置声明，将声明放在头文件中，然后<code>#include</code>。</p>
+<ul>
+<li>优点<ul>
+<li>前置声明能够节省编译时间。</li>
+<li>前置声明能节省不必要的重新编译时间，使用<code>#include</code>会使得代码由于头文件中无关改动而被重新编译。</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>前置声明隐藏依赖关系，头文件改动时，源文件会跳过必要的重新编译过程。</li>
+<li>前置声明可能被库的后续更改所破坏。</li>
+<li>前置声明来自<code>std::</code>中的符号时，行为未定义。</li>
+<li>前置声明甚至会改变代码含义。</li>
+<li>重构代码更为复杂和困难。</li>
+</ul>
+</li>
+</ul>
+<h3 id="内联函数"><a href="#内联函数" class="headerlink" title="内联函数"></a>内联函数</h3><ul>
+<li>经验：<ul>
+<li>只有函数不多于10行时才将其定义为内联函数</li>
+<li>不要内联包含循环和<code>switch</code>的函数</li>
+<li>不要内联递归函数</li>
+<li>即使声明为内联函数，编译器也不一定会接受</li>
+<li>类声明内定义的函数默认为内联函数</li>
+</ul>
+</li>
+</ul>
+<h3 id="include的路径和顺序"><a href="#include的路径和顺序" class="headerlink" title="include的路径和顺序"></a>include的路径和顺序</h3><p>避免使用<code>.</code>和<code>..</code>，按照项目源码路径完整<code>include</code>。</p>
+<ul>
+<li>内联顺序：<ol>
+<li>同名头文件</li>
+<li>C系统文件</li>
+<li>C++系统文件</li>
+<li>其他库<code>.h</code></li>
+<li>本项目<code>.h</code></li>
+</ol>
+</li>
+</ul>
+<p>这种优先顺序保证了当<code>.h</code>文件遗漏某些库时，源文件的构建会立刻终止。</p>
+<p>不同类型的头文件空格分隔。</p>
+<p>例外情况，条件编译绝对是否引入库，如不同平台。</p>
+<h2 id="作用域"><a href="#作用域" class="headerlink" title="作用域"></a>作用域</h2><h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h3><p>C++中的全局函数和全局变量的作用域是整个项目，为了限制其作用域，一种做法是使用<code>static</code>关键字修饰，另一种是使用命名空间。</p>
+<p>在不需要外部访问的情况下，C++标准提倡使用匿名命名空间，禁止使用<code>using</code>引入命名空间，禁止使用内联命名空间。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">namespace</span> X&#123;</span><br><span class="line">    <span class="keyword">inline</span> <span class="keyword">namespace</span> Y&#123;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 别名</span></span><br><span class="line"><span class="keyword">namespace</span> baz = ::foo::bar::baz;</span><br></pre></td></tr></table></figure>
+
+<p>在内联命名空间中，<code>X::Y::foo()</code>与<code>X::foo()</code>等价，其目的主要是用来兼容跨版本API。</p>
+<p>命名空间使用策略：</p>
+<ul>
+<li>遵循命名空间命名规范</li>
+<li>命名空间结束时，使用注释</li>
+<li>命名空间应当在头文件、gflag声明与定义、其他空间的类前置声明之后</li>
+<li>禁止在<code>std</code>内声明任何东西，属于未定义行为，导致不可移植</li>
+<li>禁止在头文件中使用命名空间别名，除非限制在内部命名空间中使用</li>
+<li>禁止使用<code>using</code>引入命名空间</li>
+<li>禁止使用内联命名空间</li>
+</ul>
+<h3 id="匿名命名空间与静态变量"><a href="#匿名命名空间与静态变量" class="headerlink" title="匿名命名空间与静态变量"></a>匿名命名空间与静态变量</h3><p>在<code>cxx</code>中定义不需要被外部引用的符号时，可以放在匿名命名空间或声明为<code>static</code>，但不要在头文件中这样做。</p>
+<h3 id="非成员函数、静态成员函数、全局函数"><a href="#非成员函数、静态成员函数、全局函数" class="headerlink" title="非成员函数、静态成员函数、全局函数"></a>非成员函数、静态成员函数、全局函数</h3><p>使用静态成员或命名空间内的非成员函数，不要使用裸的全局函数，不要用类的静态方法模拟命名空间效果，类的静态方法应当与类的实例或静态数据密切相关。</p>
+<p>非成员函数置于命名空间避免污染全局作用域。</p>
+<h3 id="局部变量"><a href="#局部变量" class="headerlink" title="局部变量"></a>局部变量</h3><p>将函数变量尽可能放在最小作用域内，在变量声明时进行初始化。</p>
+<p>除非变量是一个对象，每次进入作用域都需要调用构造函数，退出作用域调用析构函数。</p>
+<h3 id="静态和全局变量"><a href="#静态和全局变量" class="headerlink" title="静态和全局变量"></a>静态和全局变量</h3><p>静态生存周期的对象，包括全局变量、静态变量、静态类成员、函数静态变量，必须是原生数据类型(POD, Plain Old Data)。</p>
+<p>在多编译单元中，静态变量的构造、析构和初始化顺序在C++中只有部分是明确的，甚至随着构建发生变化，导致难以发现的bug，禁止使用类的静态存储周期变量。</p>
+<p>在同一编译单元中顺序是明确的，静态初始化优于动态初始化、初始化顺序按照声明顺序进行，逆序销毁，不同编译单元内，属于未明确行为。</p>
+<p>多线程时，静态生存周期不要使用非POD的对象以及STL容器。</p>
+<h2 id="类"><a href="#类" class="headerlink" title="类"></a>类</h2><h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><p>不要在构造函数中调用虚函数，也不要在无法报错时进行可能失败的初始化。</p>
+<p>构造函数内调用自身的虚函数并不会重定向到子类的虚函数实现。</p>
+<p>如果执行失败，可能会得到一个初始化失败的对象，这个对象可能无法进入到正常状态。</p>
+<p>如果对象需要进行初始化，通过定义<code>Init()</code>方法或工厂方法进行创建并初始化。</p>
+<h3 id="隐式类型转换"><a href="#隐式类型转换" class="headerlink" title="隐式类型转换"></a>隐式类型转换</h3><p>一脸懵比</p>
+<h3 id="可拷贝类型和可移动类型"><a href="#可拷贝类型和可移动类型" class="headerlink" title="可拷贝类型和可移动类型"></a>可拷贝类型和可移动类型</h3><p>如果不需要，禁用隐式生成的拷贝和移动构造函数。</p>
+<h3 id="结构体-类"><a href="#结构体-类" class="headerlink" title="结构体/类"></a>结构体/类</h3><p>仅当只有数据成员和重载运算符时使用<code>struct</code>，其他一概使用<code>class</code>。</p>
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><h3 id="参数顺序"><a href="#参数顺序" class="headerlink" title="参数顺序"></a>参数顺序</h3><p>输入参数在前，输出参数在后。</p>
+<h3 id="简短函数"><a href="#简短函数" class="headerlink" title="简短函数"></a>简短函数</h3><p>优先编写简短函数，若行数超过四十行考虑分离。</p>
+<h3 id="引用参数"><a href="#引用参数" class="headerlink" title="引用参数"></a>引用参数</h3><p>引用必须用<code>const</code>，对变量进行修改传指针。除非特殊要求，如<code>swap()</code>。</p>
+<h3 id="函数重载"><a href="#函数重载" class="headerlink" title="函数重载"></a>函数重载</h3><p>函数重载尽量能够简单明了，尽量不要改变相同数量的参数类型来进行重载。可以考虑在函数名中加入类型信息。</p>
+<h3 id="缺省参数"><a href="#缺省参数" class="headerlink" title="缺省参数"></a>缺省参数</h3><p>只允许在非虚函数中使用缺省参数，尽可能使用函数重载而非缺省参数。</p>
+<p>优点：</p>
+<ul>
+<li>降低代码量，降低代码修改时的工作量，函数重载需要修改多个函数。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>虚函数调用的缺省参数取决于目标对象的静态类型，无法保证给定函数的所有重载声明的都是同样的缺省参数。</li>
+<li>缺省参数会干扰函数指针，导致函数签名与调用点签名不一致。</li>
+<li>缺省参数每次调用都需要重新求值,导致生成的代码膨胀。</li>
+</ul>
+<h3 id="函数返回类型后置语法"><a href="#函数返回类型后置语法" class="headerlink" title="函数返回类型后置语法"></a>函数返回类型后置语法</h3><p>只有常规写法不便于书写或阅读时才使用返回类型后置语法。</p>
+<figure class="highlight"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">foo</span><span class="params">(<span class="keyword">int</span> x)</span></span>;</span><br><span class="line">auto foo(int x) -&gt; int;</span><br></pre></td></tr></table></figure>
+
+<p>优点：</p>
+<ul>
+<li>后置返回类型是显示指定Lambda表达式返回值类型的唯一方式，通常情况下编译器能够自动推导出Lambda表达式的返回类型，但并不是所有情况。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>陌生，与原始代码看起来不协调（黑人问号？）</li>
+</ul>
+<h2 id="G式奇淫技巧"><a href="#G式奇淫技巧" class="headerlink" title="G式奇淫技巧"></a>G式奇淫技巧</h2><h3 id="所有权与智能指针"><a href="#所有权与智能指针" class="headerlink" title="所有权与智能指针"></a>所有权与智能指针</h3><p>C++11后时代C++程序员的常识题，不要使用<code>std::auto_ptr</code>，使用<code>std::unique_ptr</code>或<code>std::shared_ptr</code>，倾向于前者。</p>
+<h3 id="Cpplint"><a href="#Cpplint" class="headerlink" title="Cpplint"></a>Cpplint</h3><p>风格检查<a target="_blank" rel="noopener" href="https://github.com/google/styleguide/blob/gh-pages/cpplint/cpplint.py">cpplint.py</a></p>
+<h2 id="命名规范"><a href="#命名规范" class="headerlink" title="命名规范"></a>命名规范</h2><h3 id="通用命名规则"><a href="#通用命名规则" class="headerlink" title="通用命名规则"></a>通用命名规则</h3><p>描述性命名，如果你也曾被前人项目中的缩写整懵比那就少用缩写，如果实在需要，请在声明位置加注释。</p>
+<h3 id="文件命名"><a href="#文件命名" class="headerlink" title="文件命名"></a>文件命名</h3><p>全部小写，下划线<code>_</code>连接。不要与<code>/usr/include</code>下的文件重名。</p>
+<p>内联函数放在<code>.h</code>文件中。</p>
+<h3 id="类型命名"><a href="#类型命名" class="headerlink" title="类型命名"></a>类型命名</h3><p>类、结构体、类型定义、枚举、类型模板参数。每个单词首字母大写，不应包含下划线。</p>
+<h3 id="变量命名"><a href="#变量命名" class="headerlink" title="变量命名"></a>变量命名</h3><p>变量与数据成员一律小写，单词之间用下划线连接，类的成员变量用下划线结尾，结构体变量与普通变量一致，无需加下划线。</p>
+<h3 id="常量命名"><a href="#常量命名" class="headerlink" title="常量命名"></a>常量命名</h3><p>声明为<code>constexpr</code>和<code>const</code>的变量，或在程序运行i期间其值始终保持不变的以<code>k</code>开头，大小写混合。</p>
+<h3 id="函数命名"><a href="#函数命名" class="headerlink" title="函数命名"></a>函数命名</h3><p>常规函数大小写混合，取值或设值要求与变量名匹配，如<code>set_num()</code>，<code>get_num()</code>。</p>
+<p>对于函数名中出现的单词缩写倾向于全部用大写<code>StartRPC()</code>。</p>
+<h3 id="命名空间命名"><a href="#命名空间命名" class="headerlink" title="命名空间命名"></a>命名空间命名</h3><p>命名空间以小写字母命名，最高级命名空间取决于项目名称或团队名，避免嵌套命名空间与上层命名空间之间存在冲突。</p>
+<p>命名空间中的代码，应当存放于与命名空间的名字匹配的文件夹或其子文件夹中。</p>
+<p>不要使用缩写。</p>
+<h3 id="枚举命名"><a href="#枚举命名" class="headerlink" title="枚举命名"></a>枚举命名</h3><p>枚举命名与常量或宏保持一致<code>kEnumName</code>、<code>ENUM_NAME</code>。优先采用常量命名方式。</p>
+<h2 id="宏命名"><a href="#宏命名" class="headerlink" title="宏命名"></a>宏命名</h2><p>参见<a href="">不要用宏</a>，如果不得不适用，全部大写，下划线连接。</p>
+<h3 id="注释风格"><a href="#注释风格" class="headerlink" title="注释风格"></a>注释风格</h3><p>项目统一风格<code>//</code>或<code>/* */</code></p>
+<p>写好<code>TODO</code>、<code>FIX</code>、<code>DEPRECATED</code></p>
+<h3 id="我是不可能写注释的，告辞"><a href="#我是不可能写注释的，告辞" class="headerlink" title="我是不可能写注释的，告辞"></a>我是不可能写注释的，告辞</h3>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/C-%E7%BC%96%E7%A0%81%E8%A7%84%E8%8C%83/" rel="tag"><i class="fa fa-tag"></i> C++编码规范</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/3d612df5b918/" rel="prev" title="__attribute__那些事">
+      <i class="fa fa-chevron-left"></i> __attribute__那些事
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/b55797522dd3/" rel="next" title="git源码阅读">
+      git源码阅读 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%A4%B4%E6%96%87%E4%BB%B6"><span class="nav-number">1.</span> <span class="nav-text">头文件</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#self-contained%E5%A4%B4%E6%96%87%E4%BB%B6"><span class="nav-number">1.1.</span> <span class="nav-text">self-contained头文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#define%E4%BF%9D%E6%8A%A4"><span class="nav-number">1.2.</span> <span class="nav-text">define保护</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E5%85%A5%E6%89%80%E6%9C%89%E4%BD%BF%E7%94%A8%E7%9A%84%E5%A4%B4%E6%96%87%E4%BB%B6"><span class="nav-number">1.3.</span> <span class="nav-text">引入所有使用的头文件</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%89%8D%E7%BD%AE%E5%A3%B0%E6%98%8E"><span class="nav-number">1.4.</span> <span class="nav-text">前置声明</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%86%85%E8%81%94%E5%87%BD%E6%95%B0"><span class="nav-number">1.5.</span> <span class="nav-text">内联函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#include%E7%9A%84%E8%B7%AF%E5%BE%84%E5%92%8C%E9%A1%BA%E5%BA%8F"><span class="nav-number">1.6.</span> <span class="nav-text">include的路径和顺序</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E4%BD%9C%E7%94%A8%E5%9F%9F"><span class="nav-number">2.</span> <span class="nav-text">作用域</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4"><span class="nav-number">2.1.</span> <span class="nav-text">命名空间</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8C%BF%E5%90%8D%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E4%B8%8E%E9%9D%99%E6%80%81%E5%8F%98%E9%87%8F"><span class="nav-number">2.2.</span> <span class="nav-text">匿名命名空间与静态变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%9E%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E3%80%81%E9%9D%99%E6%80%81%E6%88%90%E5%91%98%E5%87%BD%E6%95%B0%E3%80%81%E5%85%A8%E5%B1%80%E5%87%BD%E6%95%B0"><span class="nav-number">2.3.</span> <span class="nav-text">非成员函数、静态成员函数、全局函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B1%80%E9%83%A8%E5%8F%98%E9%87%8F"><span class="nav-number">2.4.</span> <span class="nav-text">局部变量</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9D%99%E6%80%81%E5%92%8C%E5%85%A8%E5%B1%80%E5%8F%98%E9%87%8F"><span class="nav-number">2.5.</span> <span class="nav-text">静态和全局变量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E7%B1%BB"><span class="nav-number">3.</span> <span class="nav-text">类</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%84%E9%80%A0%E5%87%BD%E6%95%B0"><span class="nav-number">3.1.</span> <span class="nav-text">构造函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%9A%90%E5%BC%8F%E7%B1%BB%E5%9E%8B%E8%BD%AC%E6%8D%A2"><span class="nav-number">3.2.</span> <span class="nav-text">隐式类型转换</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%AF%E6%8B%B7%E8%B4%9D%E7%B1%BB%E5%9E%8B%E5%92%8C%E5%8F%AF%E7%A7%BB%E5%8A%A8%E7%B1%BB%E5%9E%8B"><span class="nav-number">3.3.</span> <span class="nav-text">可拷贝类型和可移动类型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BB%93%E6%9E%84%E4%BD%93-%E7%B1%BB"><span class="nav-number">3.4.</span> <span class="nav-text">结构体&#x2F;类</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#TODO"><span class="nav-number">4.</span> <span class="nav-text">TODO</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%87%BD%E6%95%B0"><span class="nav-number">5.</span> <span class="nav-text">函数</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%82%E6%95%B0%E9%A1%BA%E5%BA%8F"><span class="nav-number">5.1.</span> <span class="nav-text">参数顺序</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%AE%80%E7%9F%AD%E5%87%BD%E6%95%B0"><span class="nav-number">5.2.</span> <span class="nav-text">简短函数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%BC%95%E7%94%A8%E5%8F%82%E6%95%B0"><span class="nav-number">5.3.</span> <span class="nav-text">引用参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E9%87%8D%E8%BD%BD"><span class="nav-number">5.4.</span> <span class="nav-text">函数重载</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%BC%BA%E7%9C%81%E5%8F%82%E6%95%B0"><span class="nav-number">5.5.</span> <span class="nav-text">缺省参数</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E8%BF%94%E5%9B%9E%E7%B1%BB%E5%9E%8B%E5%90%8E%E7%BD%AE%E8%AF%AD%E6%B3%95"><span class="nav-number">5.6.</span> <span class="nav-text">函数返回类型后置语法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#G%E5%BC%8F%E5%A5%87%E6%B7%AB%E6%8A%80%E5%B7%A7"><span class="nav-number">6.</span> <span class="nav-text">G式奇淫技巧</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%89%80%E6%9C%89%E6%9D%83%E4%B8%8E%E6%99%BA%E8%83%BD%E6%8C%87%E9%92%88"><span class="nav-number">6.1.</span> <span class="nav-text">所有权与智能指针</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Cpplint"><span class="nav-number">6.2.</span> <span class="nav-text">Cpplint</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%91%BD%E5%90%8D%E8%A7%84%E8%8C%83"><span class="nav-number">7.</span> <span class="nav-text">命名规范</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E9%80%9A%E7%94%A8%E5%91%BD%E5%90%8D%E8%A7%84%E5%88%99"><span class="nav-number">7.1.</span> <span class="nav-text">通用命名规则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%96%87%E4%BB%B6%E5%91%BD%E5%90%8D"><span class="nav-number">7.2.</span> <span class="nav-text">文件命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E7%B1%BB%E5%9E%8B%E5%91%BD%E5%90%8D"><span class="nav-number">7.3.</span> <span class="nav-text">类型命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%8F%98%E9%87%8F%E5%91%BD%E5%90%8D"><span class="nav-number">7.4.</span> <span class="nav-text">变量命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%B8%B8%E9%87%8F%E5%91%BD%E5%90%8D"><span class="nav-number">7.5.</span> <span class="nav-text">常量命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%87%BD%E6%95%B0%E5%91%BD%E5%90%8D"><span class="nav-number">7.6.</span> <span class="nav-text">函数命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E5%91%BD%E5%90%8D%E7%A9%BA%E9%97%B4%E5%91%BD%E5%90%8D"><span class="nav-number">7.7.</span> <span class="nav-text">命名空间命名</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%9E%9A%E4%B8%BE%E5%91%BD%E5%90%8D"><span class="nav-number">7.8.</span> <span class="nav-text">枚举命名</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%AE%8F%E5%91%BD%E5%90%8D"><span class="nav-number">8.</span> <span class="nav-text">宏命名</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%B3%A8%E9%87%8A%E9%A3%8E%E6%A0%BC"><span class="nav-number">8.1.</span> <span class="nav-text">注释风格</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#%E6%88%91%E6%98%AF%E4%B8%8D%E5%8F%AF%E8%83%BD%E5%86%99%E6%B3%A8%E9%87%8A%E7%9A%84%EF%BC%8C%E5%91%8A%E8%BE%9E"><span class="nav-number">8.2.</span> <span class="nav-text">我是不可能写注释的，告辞</span></a></li></ol></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="JNJYan"
+      src="/images/%E9%BB%91%E7%99%BD.jpg">
+  <p class="site-author-name" itemprop="name">JNJYan</p>
+  <div class="site-description" itemprop="description">以梦为马，越骑越傻</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jnjyan" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jnjyan" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jjy20140825@gmail.com" title="E-Mail → mailto:jjy20140825@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JNJYan</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '67N9uXqPnCYl5B83g0FFVgob-gzGzoHsz',
+      appKey     : 'b6Uh6OmG6qcnmzhznNKskpnM',
+      placeholder: "Just go go",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : true,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 5.4.2">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"jnjyan.github.io","root":"/","scheme":"Muse","version":"7.8.0","exturl":false,"sidebar":{"position":"right","width":250,"display":"hide","padding":12,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},"path":"search.xml"};
+  </script>
+
+  <meta name="description" content="IntroductionCMake是一个编译系统生成工具，而非编译系统。CMake能够生成编译系统的输入文件如Makefile，CMake本身支持Make&#x2F;Ninja&#x2F;Visual Studio&#x2F;XCode等。 CMake是跨平台的，支持Linux、Windows、OSX等，同时也支持跨平台构建（编译器要支持跨平台才可以哦）。 CMake开始于1999&#x2F;2000年，现代CMake开始于2014年的">
+<meta property="og:type" content="article">
+<meta property="og:title" content="现代cmake学习">
+<meta property="og:url" content="https://jnjyan.github.io/08ff2f31fdf8/index.html">
+<meta property="og:site_name" content="Black Eye Galaxy">
+<meta property="og:description" content="IntroductionCMake是一个编译系统生成工具，而非编译系统。CMake能够生成编译系统的输入文件如Makefile，CMake本身支持Make&#x2F;Ninja&#x2F;Visual Studio&#x2F;XCode等。 CMake是跨平台的，支持Linux、Windows、OSX等，同时也支持跨平台构建（编译器要支持跨平台才可以哦）。 CMake开始于1999&#x2F;2000年，现代CMake开始于2014年的">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2021-04-09T07:31:38.000Z">
+<meta property="article:modified_time" content="2023-06-18T08:05:31.858Z">
+<meta property="article:author" content="JNJYan">
+<meta property="article:tag" content="cmake">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="https://jnjyan.github.io/08ff2f31fdf8/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-CN'
+  };
+</script>
+
+  <title>现代cmake学习 | Black Eye Galaxy</title>
+  
+
+
+  <script>
+    var _hmt = _hmt || [];
+    (function() {
+      var hm = document.createElement("script");
+      hm.src = "https://hm.baidu.com/hm.js?223443aa6efb3158acac1d42a993f246";
+      var s = document.getElementsByTagName("script")[0];
+      s.parentNode.insertBefore(hm, s);
+    })();
+  </script>
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="切换导航栏">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">Black Eye Galaxy</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>首页</a>
+
+  </li>
+        <li class="menu-item menu-item-about">
+
+    <a href="/about/" rel="section"><i class="fa fa-user fa-fw"></i>关于</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>标签</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>分类</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>归档</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+  <div class="reading-progress-bar"></div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-CN">
+    <link itemprop="mainEntityOfPage" href="https://jnjyan.github.io/08ff2f31fdf8/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/%E9%BB%91%E7%99%BD.jpg">
+      <meta itemprop="name" content="JNJYan">
+      <meta itemprop="description" content="以梦为马，越骑越傻">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="Black Eye Galaxy">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          现代cmake学习
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">发表于</span>
+
+              <time title="创建时间：2021-04-09 15:31:38" itemprop="dateCreated datePublished" datetime="2021-04-09T15:31:38+08:00">2021-04-09</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">更新于</span>
+                <time title="修改时间：2023-06-18 16:05:31" itemprop="dateModified" datetime="2023-06-18T16:05:31+08:00">2023-06-18</time>
+              </span>
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-folder"></i>
+              </span>
+              <span class="post-meta-item-text">分类于</span>
+                <span itemprop="about" itemscope itemtype="http://schema.org/Thing">
+                  <a href="/categories/%E7%BC%96%E8%AF%91/" itemprop="url" rel="index"><span itemprop="name">编译</span></a>
+                </span>
+            </span>
+
+          
+            <span id="/08ff2f31fdf8/" class="post-meta-item leancloud_visitors" data-flag-title="现代cmake学习" title="阅读次数">
+              <span class="post-meta-item-icon">
+                <i class="fa fa-eye"></i>
+              </span>
+              <span class="post-meta-item-text">阅读次数：</span>
+              <span class="leancloud-visitors-count"></span>
+            </span>
+  
+  <span class="post-meta-item">
+    
+      <span class="post-meta-item-icon">
+        <i class="far fa-comment"></i>
+      </span>
+      <span class="post-meta-item-text">Valine：</span>
+    
+    <a title="valine" href="/08ff2f31fdf8/#valine-comments" itemprop="discussionUrl">
+      <span class="post-comments-count valine-comment-count" data-xid="/08ff2f31fdf8/" itemprop="commentCount"></span>
+    </a>
+  </span>
+  
+  
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>CMake是一个编译系统生成工具，而非编译系统。CMake能够生成编译系统的输入文件如<code>Makefile</code>，CMake本身支持<code>Make/Ninja/Visual Studio/XCode</code>等。</p>
+<p>CMake是跨平台的，支持Linux、Windows、OSX等，同时也支持跨平台构建（编译器要支持跨平台才可以哦）。</p>
+<p>CMake开始于1999/2000年，现代CMake开始于2014年的<code>3.0</code>版本，现代CMake有一个非常重要的概念，<code>Everything is a (self-contained) target</code>。</p>
+<blockquote>
+<p>Everything that is needed to (successfully) build that target.</p>
+<p>Everything that is needed to (successfully) use that target.</p>
+</blockquote>
+<h2 id="Let’s-Go"><a href="#Let’s-Go" class="headerlink" title="Let’s Go"></a>Let’s Go</h2><p>时刻牢记以下三句话。</p>
+<ul>
+<li>Declare a target</li>
+<li>Declare target’s traits</li>
+<li>It’s all about targets</li>
+</ul>
+<h3 id="Minimum-Version"><a href="#Minimum-Version" class="headerlink" title="Minimum Version"></a>Minimum Version</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.5</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Setting-a-Project"><a href="#Setting-a-Project" class="headerlink" title="Setting a Project"></a>Setting a Project</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">project</span>(hello-world VERSION <span class="number">1.0</span></span><br><span class="line">                    DESCRIPTION <span class="string">&quot;&quot;</span></span><br><span class="line">                    LANGUAGES CXX) <span class="comment">## C/CXX/ASM/CUDA/FORTAN/SWIFT</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">add_subdirectory</span>(src)</span><br><span class="line"></span><br><span class="line"><span class="keyword">install</span>(FILES COPYRIGHT README.md DESTINATION share/doc/cmake/hello-world)</span><br><span class="line"><span class="keyword">install</span>(PROGREAMS **.sh DESTINATION bin)</span><br><span class="line"><span class="keyword">install</span>(DIRECTORY doc DESTINATION share/doc/cmake/hello-world)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Making-an-Executable"><a href="#Making-an-Executable" class="headerlink" title="Making an Executable"></a>Making an Executable</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">add_executable</span>(one two.cpp three.h)</span><br></pre></td></tr></table></figure>
+
+<p><code>one</code>既是生成的可执行程序也是Target，后续为源文件列表和头文件列表，大多数情况下，头文件将会被忽略，只是为了让他们显示在IDE中。</p>
+<h3 id="Making-an-Library"><a href="#Making-an-Library" class="headerlink" title="Making an Library"></a>Making an Library</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">## BUILD_SHARED_LIBS</span></span><br><span class="line"><span class="keyword">add_library</span>(one two.cpp three.h)</span><br><span class="line"><span class="comment">## 静态库</span></span><br><span class="line"><span class="keyword">add_library</span>(one STATIC two.cpp three.h)</span><br><span class="line"><span class="comment">## 动态库</span></span><br><span class="line"><span class="keyword">add_library</span>(one SHARED two.cpp three.h)</span><br><span class="line"><span class="comment">## 模块</span></span><br><span class="line"><span class="keyword">add_library</span>(one MODULE two.cpp three.h)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Target"><a href="#Target" class="headerlink" title="Target"></a>Target</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">target_include_directories</span>(ont PUBLIC <span class="keyword">include</span>)</span><br><span class="line"><span class="keyword">target_include_directories</span>(ont PRIVATE <span class="keyword">include</span>)</span><br><span class="line"><span class="keyword">target_include_directories</span>(ont INTERFACE <span class="keyword">include</span>)</span><br></pre></td></tr></table></figure>
+
+<p><code>PUBLIC</code>意味着所有链接到此目标的目标都需要包含<code>include</code>目录，<code>PRIVATE</code>表示只有当前target需要，依赖项不需要，<code>INTERFACE</code>表示只有依赖项许需要。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">add_library(another STATIC another.cpp another.h)</span><br><span class="line">target_link_libraries(another PUBLIC one)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>target_include_directories</code>指定了target包含的头文件路径。</p>
+</li>
+<li><p><code>target_link_libraries</code>指定了target链接的库。</p>
+</li>
+<li><p><code>target_compile_options</code>指定了taget的编译选项。</p>
+</li>
+</ul>
+<p>target由<code>add_library()</code>和<code>add_executable()</code>生成。</p>
+<p>我们以如下工程目录介绍<code>PUBLIC/PRIVATE/INTERFACE</code>。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">cmake-test/                 工程主目录，main.c 调用 libhello-world.so</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">├── hello-world             生成 libhello-world.so，调用 libhello.so 和 libworld.so</span><br><span class="line">│   ├── CMakeLists.txt</span><br><span class="line">│   ├── hello               生成 libhello.so </span><br><span class="line">│   │   ├── CMakeLists.txt</span><br><span class="line">│   │   ├── hello.c</span><br><span class="line">│   │   └── hello.h         libhello.so 对外的头文件</span><br><span class="line">│   ├── hello_world.c</span><br><span class="line">│   ├── hello_world.h       libhello-world.so 对外的头文件</span><br><span class="line">│   └── world               生成 libworld.so</span><br><span class="line">│       ├── CMakeLists.txt</span><br><span class="line">│       ├── world.c</span><br><span class="line">│       └── world.h         libworld.so 对外的头文件</span><br><span class="line">└── main.c</span><br></pre></td></tr></table></figure>
+
+<p>其调用关系如下所示</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">                                 ├────libhello.so</span><br><span class="line">可执行文件────libhello-world.so</span><br><span class="line">                                 ├────libworld.so</span><br></pre></td></tr></table></figure>
+
+<p><code>PRIVATE</code>:生成<code>libhello-world.so</code>时，只在<code>hello_world.c</code>中包含了<code>hello.h</code>，<code>libhello-world.so</code>对外的头文件<code>hello_world.h</code>不包含<code>hello.h</code>，并且<code>main.c</code>不调用<code>hello.c</code>中的函数，那么应当用<code>PRIVATE</code>。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">target_link_libraries</span>(hello-world PRIVATE hello)</span><br><span class="line"><span class="keyword">target_include_directories</span>(hello-world PRIVATE hello)</span><br></pre></td></tr></table></figure>
+
+<p><code>INTERFACE</code>:生成<code>libhello-world.so</code>时，只在<code>libhello-world.so</code>对外的头文件<code>hello_world.h</code>包含<code>hello.h</code>，<code>hello_world.c</code>不包含<code>hello.h</code>即<code>libhello-world.so</code>不使用<code>libhello.so</code>提供的功能，只需要<code>hello.h</code>中定义的结构体/类等类型信息，但<code>main.c</code>需要调用<code>hello.c</code>中的函数即<code>libhello.so</code>中的函数，那么应当用<code>INTERFACE</code>。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">target_link_libraries</span>(hello-world INTERFACE hello)</span><br><span class="line"><span class="keyword">target_include_directories</span>(hello-world INTERFACE hello)</span><br></pre></td></tr></table></figure>
+
+<p><code>PUBLIC</code>:生成<code>libhello-world.so</code>时，在<code>libhello-world.so</code>对外的头文件<code>hello_world.h</code>包含<code>hello.h</code>，<code>hello_world.c</code>也包含<code>hello.h</code>即<code>libhello-world.so</code>使用<code>libhello.so</code>提供的功能，并且<code>main.c</code>需要调用<code>hello.c</code>中的函数即<code>libhello.so</code>中的函数，那么应当用<code>PUBLIC</code>。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">target_link_libraries</span>(hello-world PUBLIC hello)</span><br><span class="line"><span class="keyword">target_include_directories</span>(hello-world PUBLIC hello)</span><br></pre></td></tr></table></figure>
+
+<p>着重理解<strong>依赖传递</strong>的概念，<code>main.c</code>依赖于<code>libhello-world.so</code>，<code>libhello-world.so</code>依赖于<code>libhello.so</code>和<code>libworld.so</code>，若<code>main.c</code>不调用<code>libhello.so</code>中的功能，则<code>hello-world</code>与<code>hello</code>之间采用<code>PRIVATE</code>。若<code>main.c</code>调用<code>libhello.so</code>中的函数，但<code>libhello-world.so</code>不调用，则用<code>INTERFACE</code>。若<code>main.c</code>和<code>libhello-world.so</code>都调用<code>libhello.so</code>的函数，则使用<code>PUBLIC</code>关键字。</p>
+<p>可以参考C++继承中<code>PRIVATE/PROTECTED/PUBLIC</code>的概念<a href="#leimao"><sup>1</sup></a>。</p>
+<h3 id="Variables"><a href="#Variables" class="headerlink" title="Variables"></a>Variables</h3><h4 id="Local-Variables"><a href="#Local-Variables" class="headerlink" title="Local Variables"></a>Local Variables</h4><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(VAR1 <span class="string">&quot;local variable&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">message</span>(<span class="string">&quot;VAR1 is : &quot;</span> <span class="variable">$&#123;MY_VARIABLE&#125;</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="Cache-Variables"><a href="#Cache-Variables" class="headerlink" title="Cache Variables"></a>Cache Variables</h4><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(VAR2</span><br><span class="line">    belebele1 CACHE <span class="keyword">STRING</span> <span class="string">&quot;cache&quot;</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">&quot;VAR2 is : &quot;</span> <span class="variable">$&#123;VAR2&#125;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>命令行调用之后，会将该变量写入<code>CMakeCache.txt</code>，之后调用若不从命令行重新赋值，则会一直采用Cache中的值。</p>
+<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">mkdir build &amp;&amp; cd build</span><br><span class="line">cmake .. -DMY_CACHE_VARIABLE(:STRING)=belebele</span><br><span class="line">cmake -L .. ## 列出当前cache变量</span><br></pre></td></tr></table></figure>
+
+<p><code>bool</code>类型的变量常用OPTION表示，OPTION也可以看作cache变量的一种，所以会写进<code>CMakeCache.txt</code>。</p>
+<figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">OPTION</span>(VAR3 <span class="string">&quot;description&quot;</span> <span class="keyword">OFF</span>/<span class="keyword">ON</span>)</span><br></pre></td></tr></table></figure>
+
+<p>cmake的一些常见变量见官网<a href="#cmake-variable"><sup>2</sup></a>。</p>
+<h4 id="Environment-Variables"><a href="#Environment-Variables" class="headerlink" title="Environment Variables"></a>Environment Variables</h4><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set</span>(ENV&#123;variable_name&#125; value)</span><br><span class="line">$ENV&#123;variable_name&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Properties"><a href="#Properties" class="headerlink" title="Properties"></a>Properties</h4><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">set_property</span>(<span class="keyword">TARGET</span> TargetName PROPERTY CXX_STANDARD <span class="number">11</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">set_target_properties</span>(TargetName PROPERTY CXX_STANDARD <span class="number">11</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">get_property</span>(Result <span class="keyword">TARGET</span> TargetName PROPERTY CXX_STANDARD)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Control-Flow"><a href="#Control-Flow" class="headerlink" title="Control Flow"></a>Control Flow</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="variable">$&#123;variable&#125;</span>)</span><br><span class="line">    xxx</span><br><span class="line"><span class="keyword">else</span>()</span><br><span class="line">    zzz</span><br><span class="line"><span class="keyword">endif</span>()</span><br></pre></td></tr></table></figure>
+
+<h3 id="Function"><a href="#Function" class="headerlink" title="Function"></a>Function</h3><figure class="highlight cmake"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">function</span>(SIMPLE_FUNC)</span><br><span class="line">    <span class="keyword">message</span>(<span class="string">&quot;simple function&quot;</span>)</span><br><span class="line"><span class="keyword">endfunction</span>()</span><br></pre></td></tr></table></figure>
+
+<p>其他控制逻辑有<code>NOT/TARGET/EXISTS/DEFINED/AND/OR/STREQUAL/MATCHES/VERSION_LESS/VERSION_LESS_EQUAL</code>等。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><div id="modern-cmake"></div>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://cliutils.gitlab.io/modern-cmake/">moder-cmake</a></li>
+</ul>
+<div id="youtube"></div>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://www.youtube.com/watch?v=y7ndUhdQuU8">youtube/c++2018</a></li>
+</ul>
+<div id="leimao"></div>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://leimao.github.io/blog/CMake-Public-Private-Interface/">CMake-Public-Private-Interface</a></li>
+</ul>
+<div id="intheritance"></div>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://kubasejdak.com/modern-cmake-is-like-inheritance">Modern CMake is like inheritance</a></li>
+</ul>
+<div id="cmake-variable"></div>
+
+<ul>
+<li><a target="_blank" rel="noopener" href="https://cmake.org/cmake/help/latest/manual/cmake-variables.7.html">cmake-variable</a></li>
+</ul>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          
+          <div class="post-tags">
+              <a href="/tags/cmake/" rel="tag"><i class="fa fa-tag"></i> cmake</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/1b08d87585a3/" rel="prev" title="tensorflow">
+      <i class="fa fa-chevron-left"></i> tensorflow
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/e748a0f2f540/" rel="next" title="assert的那些事">
+      assert的那些事 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+    <div class="comments" id="valine-comments"></div>
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          文章目录
+        </li>
+        <li class="sidebar-nav-overview">
+          站点概览
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#Introduction"><span class="nav-number">1.</span> <span class="nav-text">Introduction</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Let%E2%80%99s-Go"><span class="nav-number">2.</span> <span class="nav-text">Let’s Go</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Minimum-Version"><span class="nav-number">2.1.</span> <span class="nav-text">Minimum Version</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Setting-a-Project"><span class="nav-number">2.2.</span> <span class="nav-text">Setting a Project</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Making-an-Executable"><span class="nav-number">2.3.</span> <span class="nav-text">Making an Executable</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Making-an-Library"><span class="nav-number">2.4.</span> <span class="nav-text">Making an Library</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Target"><span class="nav-number">2.5.</span> <span class="nav-text">Target</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Variables"><span class="nav-number">2.6.</span> <span class="nav-text">Variables</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#Local-Variables"><span class="nav-number">2.6.1.</span> <span class="nav-text">Local Variables</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Cache-Variables"><span class="nav-number">2.6.2.</span> <span class="nav-text">Cache Variables</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Environment-Variables"><span class="nav-number">2.6.3.</span> <span class="nav-text">Environment Variables</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#Properties"><span class="nav-number">2.6.4.</span> <span class="nav-text">Properties</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Control-Flow"><span class="nav-number">2.7.</span> <span class="nav-text">Control Flow</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Function"><span class="nav-number">2.8.</span> <span class="nav-text">Function</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#%E5%8F%82%E8%80%83%E6%96%87%E7%8C%AE"><span class="nav-number">3.</span> <span class="nav-text">参考文献</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+    <img class="site-author-image" itemprop="image" alt="JNJYan"
+      src="/images/%E9%BB%91%E7%99%BD.jpg">
+  <p class="site-author-name" itemprop="name">JNJYan</p>
+  <div class="site-description" itemprop="description">以梦为马，越骑越傻</div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">15</span>
+          <span class="site-state-item-name">日志</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-categories">
+            <a href="/categories/">
+          
+        <span class="site-state-item-count">8</span>
+        <span class="site-state-item-name">分类</span></a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">10</span>
+        <span class="site-state-item-name">标签</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/jnjyan" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;jnjyan" rel="noopener" target="_blank"><i class="fab fa-github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:jjy20140825@gmail.com" title="E-Mail → mailto:jjy20140825@gmail.com" rel="noopener" target="_blank"><i class="fa fa-envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 2021 – 
+  <span itemprop="copyrightYear">2023</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">JNJYan</span>
+</div>
+
+        
+<div class="busuanzi-count">
+  <script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <span class="post-meta-item" id="busuanzi_container_site_uv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-user"></i>
+      </span>
+      <span class="site-uv" title="总访客量">
+        <span id="busuanzi_value_site_uv"></span>
+      </span>
+    </span>
+    <span class="post-meta-divider">|</span>
+    <span class="post-meta-item" id="busuanzi_container_site_pv" style="display: none;">
+      <span class="post-meta-item-icon">
+        <i class="fa fa-eye"></i>
+      </span>
+      <span class="site-pv" title="总访问量">
+        <span id="busuanzi_value_site_pv"></span>
+      </span>
+    </span>
+</div>
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  
+  <script color='0,0,255' opacity='0.5' zIndex='-1' count='99' src="/lib/canvas-nest/canvas-nest.min.js"></script>
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/muse.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+  
+
+
+<script>
+NexT.utils.loadComments(document.querySelector('#valine-comments'), () => {
+  NexT.utils.getScript('//unpkg.com/valine/dist/Valine.min.js', () => {
+    var GUEST = ['nick', 'mail', 'link'];
+    var guest = 'nick,mail';
+    guest = guest.split(',').filter(item => {
+      return GUEST.includes(item);
+    });
+    new Valine({
+      el         : '#valine-comments',
+      verify     : false,
+      notify     : false,
+      appId      : '67N9uXqPnCYl5B83g0FFVgob-gzGzoHsz',
+      appKey     : 'b6Uh6OmG6qcnmzhznNKskpnM',
+      placeholder: "Just go go",
+      avatar     : 'mm',
+      meta       : guest,
+      pageSize   : '10' || 10,
+      visitor    : true,
+      lang       : 'zh-cn' || 'zh-cn',
+      path       : location.pathname,
+      recordIP   : true,
+      serverURLs : ''
+    });
+  }, window.Valine);
+});
+</script>
+
+</body>
+</html>

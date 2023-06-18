@@ -1,0 +1,630 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>阅读清单</title>
+    <url>/e6c97a2f7153/</url>
+    <content><![CDATA[<h2 id="专业书籍"><a href="#专业书籍" class="headerlink" title="专业书籍"></a>专业书籍</h2><ul>
+<li>C++ Primer Plus [2020.05-2020.06]</li>
+<li>C++语言的设计与演化 [2021.08.30-]</li>
+</ul>
+<h2 id="论文"><a href="#论文" class="headerlink" title="论文"></a>论文</h2><h3 id="推荐"><a href="#推荐" class="headerlink" title="推荐"></a>推荐</h3><ol>
+<li>(KDD2021)Learning Elastic Embeddings for Customizing On-Device Recommenders(<a href="#fragment">202108</a>)</li>
+</ol>
+]]></content>
+  </entry>
+  <entry>
+    <title></title>
+    <url>/8ce42490687f/</url>
+    <content><![CDATA[<h1 id="Paper-Reading-List"><a href="#Paper-Reading-List" class="headerlink" title="Paper Reading List"></a>Paper Reading List</h1><h2 id="1-Learning-Elastic-Embeddings-for-Customizing-On-Device-Recommenders-KDD2021"><a href="#1-Learning-Elastic-Embeddings-for-Customizing-On-Device-Recommenders-KDD2021" class="headerlink" title="1. Learning Elastic Embeddings for Customizing On-Device Recommenders(KDD2021)"></a>1. Learning Elastic Embeddings for Customizing On-Device Recommenders(KDD2021)</h2><h3 id="Motivation"><a href="#Motivation" class="headerlink" title="Motivation"></a>Motivation</h3><p>服务器通常有着固定的内存和性能，因此我们可以训练一个模型，找到能够内存和计算能力适配这个模型的机器即可。不同于在服务器上进行推荐，边缘计算的难点在于边缘设备的性能相差较大，智能设备的内存大小不一，不可能为每一个设备都训练一个模型。</p>
+<p>由于隐私和网络延迟的原因，现在更倾向于在边缘设备而非云服务器上部署推荐服务。在边缘设备上构建推荐系统的常用做法是压缩嵌入表示。本文提出了一种轻量级训练范式，核心思想是为每个item构造一个弹性embedding，弹性embedding是自动搜索出的由一组embedding-block的拼接。提出了一种RULE(Recommendation with Universally Learned Elastic Embeddings)方法，为了增强embeding-block的表示，在学习embedding-block时迫使其趋向于多样化；然后设计了基于性能估计的渐进搜索方法，允许在任何内存限制下来学习有效的弹性embedding。</p>
+<h3 id="Background"><a href="#Background" class="headerlink" title="Background"></a>Background</h3><p>为了实现基于边缘计算的推荐系统，受限于边缘设备的内存大小，模型的参数数量以及embedding的维度需要有所限制，大部分工作都是基于潜在因子模型(LFM)来进行的，例如矩阵分解。主要思路是将每个user和item表示成embedding，然后通过相似度计算或者网络结构来计算两者的匹配得分，由于存在大量的类别特征，因此LFM模型的主要参数是embedding而非模型weights和biases。因此大多数工作都是压缩embedding的维度从而减小模型的大小。</p>
+<p>早期研究采用离散哈希将实值嵌入转换为二进制，以两者的汉明距离来衡量user和item的相似性，由于转换过程中的信息丢失，使得二进制编码的表示效果极差，远不如普通的矩阵分解。</p>
+<p>目前主要的两种方法是基于组合嵌入和多维嵌入的方法。组合嵌入只有少量的元嵌入表示，user和item则表示成元嵌入的不同组合，而多维嵌入允许每个嵌入表示在训练过程中的维度不一致，因此可以学得user和item的最佳的嵌入表示的维度从而减少参数量。</p>
+<p>尽管NAS(神经架构搜索)能够缓解构建模型的困难，但为了满足新的内存约束，往往还是需要重新训练，NAS搜索并训练得到的模型是针对一个特定的内存进行优化的。</p>
+<h3 id="Idea"><a href="#Idea" class="headerlink" title="Idea"></a>Idea</h3><p>边缘设备中一般只能获取到用户自己的嵌入表示，因此本文主要对item的embedding进行压缩，将完整的item embedding视为较小的embedding-block的串联，与组合嵌入的区别在于，每个item的embedding-block并不是共享的。组合嵌入表示可能存在一个候选的元嵌入集合，item的嵌入表示则是由这个元嵌入集合中的元嵌入组合而成，而本文的方法中的embedding-block并非是多个item共享的。</p>
+<p>弹性embedding可以选择使用哪些embedding-block以及用多少embedding-block，从而控制item嵌入所占用的内存大小。</p>
+<p>在所有item的嵌入空间进行搜索是不切实际的，因此考虑对item进行分组，同一group内的item共享embedding-block，从而缩小搜索空间，在训练时，增加一个多样性驱动的正则化，以鼓励embedding-block的多样性，提出了一种基于性能估计的进化搜索方法。为了加快搜索，在确定分配给每个group的embedding-block的数量时引入高斯先验，使得搜索函数在搜索重要/不重要的item时选取大/小维度的嵌入，同时保留其他group的嵌入维度。</p>
+<h2 id="2-Disposable-Linear-Bandits-for-Online-Recommendations"><a href="#2-Disposable-Linear-Bandits-for-Online-Recommendations" class="headerlink" title="2. Disposable Linear Bandits for Online Recommendations"></a>2. Disposable Linear Bandits for Online Recommendations</h2><h3 id="多臂老虎机-Multi-Arms-Bandits"><a href="#多臂老虎机-Multi-Arms-Bandits" class="headerlink" title="多臂老虎机(Multi-Arms Bandits)"></a>多臂老虎机(Multi-Arms Bandits)</h3><p>多臂老虎机可以看作是一组实分布$B={R_1,\dots,R_k}$，第i杆奖励服从分布$R_i$，${}$</p>
+<h2 id="阿里淘宝首猜-（长序列建模）"><a href="#阿里淘宝首猜-（长序列建模）" class="headerlink" title="阿里淘宝首猜 （长序列建模）"></a>阿里淘宝首猜 （长序列建模）</h2><p><img src="/images/%E9%98%BF%E9%87%8C%E6%B7%98%E5%AE%9D%E9%A6%96%E7%8C%9C%E6%9E%B6%E6%9E%84.png" alt="淘宝首猜架构"></p>
+<h3 id="召回"><a href="#召回" class="headerlink" title="召回"></a>召回</h3><h3 id="粗排"><a href="#粗排" class="headerlink" title="粗排"></a>粗排</h3><p>双塔内积，十万量级，用户侧在线计算，商品侧离线计算。<br><strong>缺点</strong>：表达能力受限，内积模型无法加入交叉特征，部署一致性要求高。<br>天然bais：训练数据来源于曝光，而实际预测数据来源于召回。</p>
+<h4 id="超长序列建模（两年，上万）"><a href="#超长序列建模（两年，上万）" class="headerlink" title="超长序列建模（两年，上万）"></a>超长序列建模（两年，上万）</h4><ul>
+<li>常规序列建模的方法依赖于交叉特征，使得双塔模型效果较差，序列建模适合用户行为session一致性较高的数据分布。</li>
+<li>用户序列拉长能带来更好的效果，但transformer难以支持</li>
+<li>粗排打分用户侧无法感知打分商品，无法在在线侧转为KV检索简化</li>
+</ul>
+<h5 id="解决方案"><a href="#解决方案" class="headerlink" title="解决方案"></a>解决方案</h5><ul>
+<li>长期兴趣表征离线计算，用户侧增加离线计算单元</li>
+<li>在线存储换计算，减少性能开销，（KV查user的长期兴趣表征）</li>
+</ul>
+<h5 id="建模思路"><a href="#建模思路" class="headerlink" title="建模思路"></a>建模思路</h5><ul>
+<li>三塔模型<ul>
+<li>用户分类目长期行为表征（离线计算）</li>
+<li>用户实时行为表征（在线计算）</li>
+<li>商品表征（离线计算）</li>
+</ul>
+</li>
+<li>离线根据打分类目指定用户长期行为学习用户表征，端到端训练</li>
+<li>在线部署拆图，用户侧加离线计算</li>
+</ul>
+<h3 id="精排"><a href="#精排" class="headerlink" title="精排"></a>精排</h3><h4 id="Target-Attention-长序列建模局限性"><a href="#Target-Attention-长序列建模局限性" class="headerlink" title="Target Attention 长序列建模局限性"></a>Target Attention 长序列建模局限性</h4><ul>
+<li>计算开销大，限制了其对超长序列建模</li>
+<li>本质上在历史行为序列中进行商品的相似性匹配，计算开销是内积，softmax之后关注Topk近邻。</li>
+<li>基于向量检索的方法(SIM-soft)<ul>
+<li>近似检索，注重效率</li>
+<li>离线架构索引，向量非端到端的学习</li>
+</ul>
+</li>
+<li>结构化属性倒排索引(SIM-hard,UBR4CTR,LALI)<ul>
+<li>思想是根据商品推荐类目体系离线构建倒排，在线查询</li>
+<li>人工设计的结构化属性和点击率/转化率的预估目标有较大的gap</li>
+<li>内容推荐、短视频推荐没有商品推荐中比较规范的类目结构化属性</li>
+</ul>
+</li>
+</ul>
+<h4 id="基于simhash近似检索"><a href="#基于simhash近似检索" class="headerlink" title="基于simhash近似检索"></a>基于simhash近似检索</h4><ul>
+<li>降维思路<ul>
+<li>直接对emb降维，损失精度，效果差</li>
+<li>Local-sensitive hashing 一种高维向量空间快速检索k近邻的方法，通过多轮lsh提升精度，simHash是其二值化的特殊形式</li>
+</ul>
+</li>
+<li>SimHash Attention<br>  多轮LSH进行哈希，hash结果为0/1二进制位，采用汉明距离度量（count(xor)）</li>
+<li>优势<br>  将内积attention转换为LSH attention，Query通过复杂内积运算对key检索的过程转化为高效的二进制运算。</li>
+</ul>
+<h4 id="ETA模型"><a href="#ETA模型" class="headerlink" title="ETA模型"></a>ETA模型</h4><h2 id="网易云音乐广告系统"><a href="#网易云音乐广告系统" class="headerlink" title="网易云音乐广告系统"></a>网易云音乐广告系统</h2><h3 id="广告系统介绍"><a href="#广告系统介绍" class="headerlink" title="广告系统介绍"></a>广告系统介绍</h3><h4 id="特点"><a href="#特点" class="headerlink" title="特点"></a>特点</h4><ul>
+<li>听多于看</li>
+<li>广告位分散，数据量适中</li>
+<li>弱推荐</li>
+</ul>
+<h4 id="广告核心问题"><a href="#广告核心问题" class="headerlink" title="广告核心问题"></a>广告核心问题</h4><ul>
+<li>广告买方：希望精准目标投放，降低成本，关注R(Relevane)O(Originality)I(Impact)投入产出比</li>
+<li>广告媒介平台：点击转化高，价格高，关注收入最大化</li>
+</ul>
+<h5 id="解决办法"><a href="#解决办法" class="headerlink" title="解决办法"></a>解决办法</h5><ul>
+<li>引入拍卖机制</li>
+<li>eCPM = pCTR <em>Price</em> 1000，每千次曝光可以获得的广告收入</li>
+</ul>
+<h3 id="CTR"><a href="#CTR" class="headerlink" title="CTR"></a>CTR</h3><h4 id="浅层模型"><a href="#浅层模型" class="headerlink" title="浅层模型"></a>浅层模型</h4><p><img src="images/%E7%BD%91%E6%98%93%E4%BA%91%E9%9F%B3%E4%B9%90%E5%B9%BF%E5%91%8A%E6%B5%85%E5%B1%82%E6%A8%A1%E5%9E%8B.png" alt="网易云音乐广告浅层模型"></p>
+<ol>
+<li><p>样本选取<br>客户端区分，ios和android分端训练，很显然的道理，客户端界面不同，用户点击习惯也不同</p>
+</li>
+<li><p>样本不平衡<br>CTR正负样本比例约为1:100-1000，CVR则是1:10000甚至更低，解决方法是CTR模型正样本上采样10倍，CVR负样本下采样10倍，思想很好理解，CVR正负样本比例相差太大，正样本上采样效果自然不如负样本下采样</p>
+</li>
+</ol>
+<h4 id="FM模型"><a href="#FM模型" class="headerlink" title="FM模型"></a>FM模型</h4><p>FM难以捕捉用户侧和广告侧稀疏特征的相关性，只有二阶特征组合，非线性表达能力不足，对于连续特征效果较差。</p>
+<h4 id="GBDT模型"><a href="#GBDT模型" class="headerlink" title="GBDT模型"></a>GBDT模型</h4><ol>
+<li>需要对连续特征进行处理</li>
+<li>特征深层交叉</li>
+</ol>
+<h4 id="FM"><a href="#FM" class="headerlink" title="FM"></a>FM</h4><h3 id="CVR"><a href="#CVR" class="headerlink" title="CVR"></a>CVR</h3><h3 id="用户向量建模与应用"><a href="#用户向量建模与应用" class="headerlink" title="用户向量建模与应用"></a>用户向量建模与应用</h3>]]></content>
+  </entry>
+  <entry>
+    <title>DGL分布式部署</title>
+    <url>/1c546c0ee54d/</url>
+    <content><![CDATA[<p>DGL安装脚本</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> deps</span></span><br><span class="line">sudo apt-get update &amp;&amp; sudo apt-get install -y build-essential zlib1g-dev libncurses5-dev libgdbm-dev libnss3-dev libssl-dev libreadline-dev libffi-dev wget libbz2-dev</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> install python</span></span><br><span class="line">wget https://www.python.org/ftp/python/3.8.13/Python-3.8.13.tar.xz &amp;&amp; tar -xf Python-3.8.13.tar.xz &amp;&amp; cd Python-3.8.13 &amp;&amp; ./configure --prefix=/usr/local/python3 --enable-optimizations &amp;&amp; sudo make -j 72 &amp;&amp; sudo make install</span><br><span class="line"></span><br><span class="line">sudo mv /usr/bin/python3 /usr/bin/python3.bak &amp;&amp; sudo ln -s /usr/local/python3/bin/python3 /usr/bin/python3</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> install dgl</span></span><br><span class="line">cd ~/ &amp;&amp; git clone https://github.com/dmlc/dgl.git &amp;&amp; cd dgl &amp;&amp; git checkout v0.7.0 &amp;&amp; git submodule update --init --recursive &amp;&amp; mkdir build &amp;&amp; cd build &amp;&amp; cmake .. &amp;&amp; make -j 72 &amp;&amp; cd ../python &amp;&amp; sudo python3 setup.py install</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> install torch</span></span><br><span class="line">pip3 install torch==1.10.0</span><br></pre></td></tr></table></figure>
+
+<p>ParMETIS安装脚本</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash">/bin/bash</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> install GKlib</span></span><br><span class="line">cd ~ &amp;&amp; git clone https://github.com/KarypisLab/GKlib.git &amp;&amp; cd GKlib &amp;&amp; rm -rf build &amp;&amp; make config prefix=/usr/local &amp;&amp; sudo make install</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> install METIS [deps on GKlib]</span></span><br><span class="line">cd ~ &amp;&amp; git clone https://github.com/KarypisLab/METIS.git &amp;&amp; cd METIS &amp;&amp; git submodule update --init --recursive &amp;&amp; make config shared=1 cc=gcc prefix=/usr/local i64=1 &amp;&amp; sudo make install</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> install mpicc</span></span><br><span class="line">cd ~ &amp;&amp; wget https://www.mpich.org/static/downloads/4.0/mpich-4.0.tar.gz &amp;&amp; tar -xf mpich-4.0.tar.gz &amp;&amp; cd mpich-4.0 &amp;&amp; ./configure -prefix=/usr/local --disable-fortran &amp;&amp; make -j 72 &amp;&amp; sudo make install</span><br><span class="line"></span><br><span class="line"><span class="meta">#</span><span class="bash"> install ParMETIS [deps on mpicc and METIS]</span></span><br><span class="line">cd ~ &amp;&amp; git clone --branch dgl https://github.com/KarypisLab/ParMETIS.git &amp;&amp; cd ParMETIS &amp;&amp; rm -rf build &amp;&amp; make config cc=mpicc prefix=/usr/local &amp;&amp; sudo make install</span><br></pre></td></tr></table></figure>]]></content>
+  </entry>
+  <entry>
+    <title>brpc源码阅读——bvar篇</title>
+    <url>/a2f97e2688e6/</url>
+    <content><![CDATA[<p>bvar是多线程环境下的计数器类库，利用thread local存储减少了cache bouncing</p>
+]]></content>
+  </entry>
+  <entry>
+    <title>gflag</title>
+    <url>/761c860f0fd6/</url>
+    <content><![CDATA[<h2 id="FlagRegistry"><a href="#FlagRegistry" class="headerlink" title="FlagRegistry"></a>FlagRegistry</h2><h2 id="AddFlagValidator"><a href="#AddFlagValidator" class="headerlink" title="AddFlagValidator"></a>AddFlagValidator</h2><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">AddFlagValidator</span><span class="params">(<span class="keyword">const</span> <span class="keyword">void</span>* flag_ptr, ValidateFnProto validate_fn_proto)</span> </span>&#123;</span><br><span class="line">    FlagRegistry* <span class="keyword">const</span> registry = FlagRegistry::GlobalRegistry();</span><br><span class="line">    <span class="function">FlagRegistryLock <span class="title">frl</span><span class="params">(registry)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>源码阅读</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>assert的那些事</title>
+    <url>/e748a0f2f540/</url>
+    <content><![CDATA[<h2 id="问题描述"><a href="#问题描述" class="headerlink" title="问题描述"></a>问题描述</h2><p>今天跟算法同学沟通需求，需要对之前写过的一个DS的接口进行改动，在改代码的过程中，突然发现DS初始化里的<code>assert(!_initialized)</code>检查写成了<code>assert(_initialized)</code>。</p>
+<p>理论上，在进行该DS初始化时应当初始化失败，程序停止并报错，但之前测试和调用都是正常的。</p>
+<p>因为之前写python写的比较多，对C++的各种细节理解并不深刻，因此并不清楚assert相关的细节，只当它是与python中的assert是相同的。</p>
+<h2 id="问题分析"><a href="#问题分析" class="headerlink" title="问题分析"></a>问题分析</h2><h3 id="assert实现"><a href="#assert实现" class="headerlink" title="assert实现"></a>assert实现</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">// assert.h</span></span><br><span class="line"><span class="comment">/* void assert (int expression);</span></span><br><span class="line"><span class="comment"></span></span><br><span class="line"><span class="comment">   If NDEBUG is defined, do nothing.</span></span><br><span class="line"><span class="comment">   If not, and EXPRESSION is zero, print an error message and abort.  */</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> __ASSERT_VOID_CAST static_cast<span class="meta-string">&lt;void&gt;</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> NDEBUG</span></span><br><span class="line"></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> assert(expr) (__ASSERT_VOID_CAST(0))</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">else</span></span></span><br><span class="line"> <span class="keyword">extern</span> <span class="keyword">void</span> __assert_fail(<span class="keyword">char</span> *__assertion, <span class="keyword">char</span> *__file, uint __line, <span class="keyword">char</span> *__function) __THROW __attribute__ ((__noreturn__));</span><br><span class="line"></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> __ASSERT_FUNCTION __func__</span></span><br><span class="line"></span><br><span class="line"> <span class="meta">#<span class="meta-keyword">define</span> assert(expr) \</span></span><br><span class="line">    ((expr)?__ASSERT_VOID_CAST(<span class="number">0</span>):__assert_fail(<span class="meta">#expr, __FILE__, __LINE__, __ASSERT_FUNCTION)))</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>在网上查阅资料之后发现，在VC编译器中<code>assert</code>只在DEBUG模式下生效，在RELEASE模式下不会进行编译。</p>
+<p>查看<code>assert.h</code>头文件，头文件中的注释很清楚的写着如果定义了<code>NDEBUG</code>，那assert不会做任何事，如果未定义<code>NDEBUG</code>且表达式的值为0，就会打印错误信息并终止程序。</p>
+<p>接下来我们来看下<code>assert</code>的实现，可以看到<code>assert()</code>使用宏来实现的，当定义了<code>NDEBUG</code>时，宏将会替换为<code>void(0)</code>，不会做任何事，若未定义<code>NDEBUG</code>，则宏会首先判断表达式<code>expr</code>是否为真，若为真则什么都不做，若为假则打印错误信息并终止程序。</p>
+<p><code>__attribute__ ((__noreturn__))</code>告知编译器，该函数不会返回。</p>
+<p><code>__assert_fail()</code>是一个二进制标准库的函数，将会终止程序，详见<a href="https://refspecs.linuxbase.org/LSB_5.0.0/LSB-Core-generic/LSB-Core-generic/baselib---assert-fail-1.html">__assert_fail</a>。</p>
+<h3 id="问题追溯"><a href="#问题追溯" class="headerlink" title="问题追溯"></a>问题追溯</h3><p>在我们的编译系统，采用CMake生成Makefile，并且利用conan来管理依赖库版本，默认情况下CMake将会采用RELEASE进行编译。</p>
+<h2 id="注意事项"><a href="#注意事项" class="headerlink" title="注意事项"></a>注意事项</h2><p>我们经常有如下场景，需要对某一个函数的返回值进行类型检查，若函数正常执行则返回<code>true</code>，否则返回<code>false</code>。当这个函数的正确执行与否与程序状态相关时，我们需要对其进行做如下检查:</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">assert(func(args));</span><br></pre></td></tr></table></figure>
+
+<p>由于<code>assert</code>的原理，在Release模式下，<code>assert(expr)</code>将会被宏替换为<code>void(0)</code>，因此<code>func(args)</code>的逻辑并不会执行。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">bool</span> status = func(args);</span><br><span class="line">assert(status);</span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>c++</category>
+      </categories>
+      <tags>
+        <tag>assert</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>现代cmake学习</title>
+    <url>/08ff2f31fdf8/</url>
+    <content><![CDATA[<h2 id="Introduction"><a href="#Introduction" class="headerlink" title="Introduction"></a>Introduction</h2><p>CMake是一个编译系统生成工具，而非编译系统。CMake能够生成编译系统的输入文件如<code>Makefile</code>，CMake本身支持<code>Make/Ninja/Visual Studio/XCode</code>等。</p>
+<p>CMake是跨平台的，支持Linux、Windows、OSX等，同时也支持跨平台构建（编译器要支持跨平台才可以哦）。</p>
+<p>CMake开始于1999/2000年，现代CMake开始于2014年的<code>3.0</code>版本，现代CMake有一个非常重要的概念，<code>Everything is a (self-contained) target</code>。</p>
+<blockquote>
+<p>Everything that is needed to (successfully) build that target.</p>
+<p>Everything that is needed to (successfully) use that target.</p>
+</blockquote>
+<h2 id="Let’s-Go"><a href="#Let’s-Go" class="headerlink" title="Let’s Go"></a>Let’s Go</h2><p>时刻牢记以下三句话。</p>
+<ul>
+<li>Declare a target</li>
+<li>Declare target’s traits</li>
+<li>It’s all about targets</li>
+</ul>
+<h3 id="Minimum-Version"><a href="#Minimum-Version" class="headerlink" title="Minimum Version"></a>Minimum Version</h3><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">cmake_minimum_required</span>(VERSION <span class="number">3.5</span>)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Setting-a-Project"><a href="#Setting-a-Project" class="headerlink" title="Setting a Project"></a>Setting a Project</h3><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">project</span>(hello-world VERSION <span class="number">1.0</span></span><br><span class="line">                    DESCRIPTION <span class="string">&quot;&quot;</span></span><br><span class="line">                    LANGUAGES CXX) <span class="comment">## C/CXX/ASM/CUDA/FORTAN/SWIFT</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">add_subdirectory</span>(src)</span><br><span class="line"></span><br><span class="line"><span class="keyword">install</span>(FILES COPYRIGHT README.md DESTINATION share/doc/cmake/hello-world)</span><br><span class="line"><span class="keyword">install</span>(PROGREAMS **.sh DESTINATION bin)</span><br><span class="line"><span class="keyword">install</span>(DIRECTORY doc DESTINATION share/doc/cmake/hello-world)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Making-an-Executable"><a href="#Making-an-Executable" class="headerlink" title="Making an Executable"></a>Making an Executable</h3><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">add_executable</span>(one two.cpp three.h)</span><br></pre></td></tr></table></figure>
+
+<p><code>one</code>既是生成的可执行程序也是Target，后续为源文件列表和头文件列表，大多数情况下，头文件将会被忽略，只是为了让他们显示在IDE中。</p>
+<h3 id="Making-an-Library"><a href="#Making-an-Library" class="headerlink" title="Making an Library"></a>Making an Library</h3><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="comment">## BUILD_SHARED_LIBS</span></span><br><span class="line"><span class="keyword">add_library</span>(one two.cpp three.h)</span><br><span class="line"><span class="comment">## 静态库</span></span><br><span class="line"><span class="keyword">add_library</span>(one STATIC two.cpp three.h)</span><br><span class="line"><span class="comment">## 动态库</span></span><br><span class="line"><span class="keyword">add_library</span>(one SHARED two.cpp three.h)</span><br><span class="line"><span class="comment">## 模块</span></span><br><span class="line"><span class="keyword">add_library</span>(one MODULE two.cpp three.h)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Target"><a href="#Target" class="headerlink" title="Target"></a>Target</h3><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">target_include_directories</span>(ont PUBLIC <span class="keyword">include</span>)</span><br><span class="line"><span class="keyword">target_include_directories</span>(ont PRIVATE <span class="keyword">include</span>)</span><br><span class="line"><span class="keyword">target_include_directories</span>(ont INTERFACE <span class="keyword">include</span>)</span><br></pre></td></tr></table></figure>
+
+<p><code>PUBLIC</code>意味着所有链接到此目标的目标都需要包含<code>include</code>目录，<code>PRIVATE</code>表示只有当前target需要，依赖项不需要，<code>INTERFACE</code>表示只有依赖项许需要。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line">add_library(another STATIC another.cpp another.h)</span><br><span class="line">target_link_libraries(another PUBLIC one)</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p><code>target_include_directories</code>指定了target包含的头文件路径。</p>
+</li>
+<li><p><code>target_link_libraries</code>指定了target链接的库。</p>
+</li>
+<li><p><code>target_compile_options</code>指定了taget的编译选项。</p>
+</li>
+</ul>
+<p>target由<code>add_library()</code>和<code>add_executable()</code>生成。</p>
+<p>我们以如下工程目录介绍<code>PUBLIC/PRIVATE/INTERFACE</code>。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">cmake-test/                 工程主目录，main.c 调用 libhello-world.so</span><br><span class="line">├── CMakeLists.txt</span><br><span class="line">├── hello-world             生成 libhello-world.so，调用 libhello.so 和 libworld.so</span><br><span class="line">│   ├── CMakeLists.txt</span><br><span class="line">│   ├── hello               生成 libhello.so </span><br><span class="line">│   │   ├── CMakeLists.txt</span><br><span class="line">│   │   ├── hello.c</span><br><span class="line">│   │   └── hello.h         libhello.so 对外的头文件</span><br><span class="line">│   ├── hello_world.c</span><br><span class="line">│   ├── hello_world.h       libhello-world.so 对外的头文件</span><br><span class="line">│   └── world               生成 libworld.so</span><br><span class="line">│       ├── CMakeLists.txt</span><br><span class="line">│       ├── world.c</span><br><span class="line">│       └── world.h         libworld.so 对外的头文件</span><br><span class="line">└── main.c</span><br></pre></td></tr></table></figure>
+
+<p>其调用关系如下所示</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">                                 ├────libhello.so</span><br><span class="line">可执行文件────libhello-world.so</span><br><span class="line">                                 ├────libworld.so</span><br></pre></td></tr></table></figure>
+
+<p><code>PRIVATE</code>:生成<code>libhello-world.so</code>时，只在<code>hello_world.c</code>中包含了<code>hello.h</code>，<code>libhello-world.so</code>对外的头文件<code>hello_world.h</code>不包含<code>hello.h</code>，并且<code>main.c</code>不调用<code>hello.c</code>中的函数，那么应当用<code>PRIVATE</code>。</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">target_link_libraries</span>(hello-world PRIVATE hello)</span><br><span class="line"><span class="keyword">target_include_directories</span>(hello-world PRIVATE hello)</span><br></pre></td></tr></table></figure>
+
+<p><code>INTERFACE</code>:生成<code>libhello-world.so</code>时，只在<code>libhello-world.so</code>对外的头文件<code>hello_world.h</code>包含<code>hello.h</code>，<code>hello_world.c</code>不包含<code>hello.h</code>即<code>libhello-world.so</code>不使用<code>libhello.so</code>提供的功能，只需要<code>hello.h</code>中定义的结构体/类等类型信息，但<code>main.c</code>需要调用<code>hello.c</code>中的函数即<code>libhello.so</code>中的函数，那么应当用<code>INTERFACE</code>。</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">target_link_libraries</span>(hello-world INTERFACE hello)</span><br><span class="line"><span class="keyword">target_include_directories</span>(hello-world INTERFACE hello)</span><br></pre></td></tr></table></figure>
+
+<p><code>PUBLIC</code>:生成<code>libhello-world.so</code>时，在<code>libhello-world.so</code>对外的头文件<code>hello_world.h</code>包含<code>hello.h</code>，<code>hello_world.c</code>也包含<code>hello.h</code>即<code>libhello-world.so</code>使用<code>libhello.so</code>提供的功能，并且<code>main.c</code>需要调用<code>hello.c</code>中的函数即<code>libhello.so</code>中的函数，那么应当用<code>PUBLIC</code>。</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">target_link_libraries</span>(hello-world PUBLIC hello)</span><br><span class="line"><span class="keyword">target_include_directories</span>(hello-world PUBLIC hello)</span><br></pre></td></tr></table></figure>
+
+<p>着重理解<strong>依赖传递</strong>的概念，<code>main.c</code>依赖于<code>libhello-world.so</code>，<code>libhello-world.so</code>依赖于<code>libhello.so</code>和<code>libworld.so</code>，若<code>main.c</code>不调用<code>libhello.so</code>中的功能，则<code>hello-world</code>与<code>hello</code>之间采用<code>PRIVATE</code>。若<code>main.c</code>调用<code>libhello.so</code>中的函数，但<code>libhello-world.so</code>不调用，则用<code>INTERFACE</code>。若<code>main.c</code>和<code>libhello-world.so</code>都调用<code>libhello.so</code>的函数，则使用<code>PUBLIC</code>关键字。</p>
+<p>可以参考C++继承中<code>PRIVATE/PROTECTED/PUBLIC</code>的概念<a href="#leimao"><sup>1</sup></a>。</p>
+<h3 id="Variables"><a href="#Variables" class="headerlink" title="Variables"></a>Variables</h3><h4 id="Local-Variables"><a href="#Local-Variables" class="headerlink" title="Local Variables"></a>Local Variables</h4><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">set</span>(VAR1 <span class="string">&quot;local variable&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">message</span>(<span class="string">&quot;VAR1 is : &quot;</span> <span class="variable">$&#123;MY_VARIABLE&#125;</span>)</span><br></pre></td></tr></table></figure>
+
+<h4 id="Cache-Variables"><a href="#Cache-Variables" class="headerlink" title="Cache Variables"></a>Cache Variables</h4><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">set</span>(VAR2</span><br><span class="line">    belebele1 CACHE <span class="keyword">STRING</span> <span class="string">&quot;cache&quot;</span>)</span><br><span class="line"><span class="keyword">message</span>(<span class="string">&quot;VAR2 is : &quot;</span> <span class="variable">$&#123;VAR2&#125;</span>)</span><br></pre></td></tr></table></figure>
+
+<p>命令行调用之后，会将该变量写入<code>CMakeCache.txt</code>，之后调用若不从命令行重新赋值，则会一直采用Cache中的值。</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">mkdir build &amp;&amp; cd build</span><br><span class="line">cmake .. -DMY_CACHE_VARIABLE(:STRING)=belebele</span><br><span class="line">cmake -L .. ## 列出当前cache变量</span><br></pre></td></tr></table></figure>
+
+<p><code>bool</code>类型的变量常用OPTION表示，OPTION也可以看作cache变量的一种，所以会写进<code>CMakeCache.txt</code>。</p>
+<figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">OPTION</span>(VAR3 <span class="string">&quot;description&quot;</span> <span class="keyword">OFF</span>/<span class="keyword">ON</span>)</span><br></pre></td></tr></table></figure>
+
+<p>cmake的一些常见变量见官网<a href="#cmake-variable"><sup>2</sup></a>。</p>
+<h4 id="Environment-Variables"><a href="#Environment-Variables" class="headerlink" title="Environment Variables"></a>Environment Variables</h4><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">set</span>(ENV&#123;variable_name&#125; value)</span><br><span class="line">$ENV&#123;variable_name&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Properties"><a href="#Properties" class="headerlink" title="Properties"></a>Properties</h4><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">set_property</span>(<span class="keyword">TARGET</span> TargetName PROPERTY CXX_STANDARD <span class="number">11</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">set_target_properties</span>(TargetName PROPERTY CXX_STANDARD <span class="number">11</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">get_property</span>(Result <span class="keyword">TARGET</span> TargetName PROPERTY CXX_STANDARD)</span><br></pre></td></tr></table></figure>
+
+<h3 id="Control-Flow"><a href="#Control-Flow" class="headerlink" title="Control Flow"></a>Control Flow</h3><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">if</span>(<span class="variable">$&#123;variable&#125;</span>)</span><br><span class="line">    xxx</span><br><span class="line"><span class="keyword">else</span>()</span><br><span class="line">    zzz</span><br><span class="line"><span class="keyword">endif</span>()</span><br></pre></td></tr></table></figure>
+
+<h3 id="Function"><a href="#Function" class="headerlink" title="Function"></a>Function</h3><figure class="highlight cmake"><table><tr><td class="code"><pre><span class="line"><span class="keyword">function</span>(SIMPLE_FUNC)</span><br><span class="line">    <span class="keyword">message</span>(<span class="string">&quot;simple function&quot;</span>)</span><br><span class="line"><span class="keyword">endfunction</span>()</span><br></pre></td></tr></table></figure>
+
+<p>其他控制逻辑有<code>NOT/TARGET/EXISTS/DEFINED/AND/OR/STREQUAL/MATCHES/VERSION_LESS/VERSION_LESS_EQUAL</code>等。</p>
+<h2 id="参考文献"><a href="#参考文献" class="headerlink" title="参考文献"></a>参考文献</h2><div id="modern-cmake"></div>
+
+<ul>
+<li><a href="https://cliutils.gitlab.io/modern-cmake/">moder-cmake</a></li>
+</ul>
+<div id="youtube"></div>
+
+<ul>
+<li><a href="https://www.youtube.com/watch?v=y7ndUhdQuU8">youtube/c++2018</a></li>
+</ul>
+<div id="leimao"></div>
+
+<ul>
+<li><a href="https://leimao.github.io/blog/CMake-Public-Private-Interface/">CMake-Public-Private-Interface</a></li>
+</ul>
+<div id="intheritance"></div>
+
+<ul>
+<li><a href="https://kubasejdak.com/modern-cmake-is-like-inheritance">Modern CMake is like inheritance</a></li>
+</ul>
+<div id="cmake-variable"></div>
+
+<ul>
+<li><a href="https://cmake.org/cmake/help/latest/manual/cmake-variables.7.html">cmake-variable</a></li>
+</ul>
+]]></content>
+      <categories>
+        <category>编译</category>
+      </categories>
+      <tags>
+        <tag>cmake</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>tensorflow</title>
+    <url>/1b08d87585a3/</url>
+    <content><![CDATA[<h2 id="Graph-h"><a href="#Graph-h" class="headerlink" title="Graph.h"></a>Graph.h</h2><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Node</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">id</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> id_; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">const_id</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> cost_id_; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">const</span> <span class="built_in">string</span>&amp; <span class="title">name</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">set_name</span><span class="params">(<span class="built_in">string</span> name)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">const</span> <span class="built_in">string</span>&amp; <span class="title">type_string</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">const</span> NodeDef&amp; <span class="title">def</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">const</span> OpDef&amp; <span class="title">op_def</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">friend</span> <span class="class"><span class="keyword">class</span> <span class="title">Graph</span>;</span></span><br><span class="line">    Node();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> id_;</span><br><span class="line">    <span class="keyword">int</span> const_id_;</span><br><span class="line"></span><br><span class="line">    NodeClass class_;</span><br><span class="line"></span><br><span class="line">    EdgeSet in_edges_;</span><br><span class="line">    EdgeSet out_edges_;</span><br><span class="line"></span><br><span class="line">    Graph* graph_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Edge</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function">Node* <span class="title">src</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> src_; &#125;</span><br><span class="line">    <span class="function">Node* <span class="title">dst</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> dst_; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">id</span><span class="params">()</span> <span class="keyword">const</span>  </span>&#123; <span class="keyword">return</span> id_; &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">src_output</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> src_output_; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">int</span> <span class="title">dst_input</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> dst_input_; &#125;</span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">IsControlEdge</span><span class="params">()</span> <span class="keyword">const</span></span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    Edge() &#123;&#125;</span><br><span class="line">    <span class="keyword">friend</span> <span class="class"><span class="keyword">class</span> <span class="title">Graph</span>;</span></span><br><span class="line">    Node* src_;</span><br><span class="line">    Node* dst_;</span><br><span class="line">    <span class="keyword">int</span> id_;</span><br><span class="line">    <span class="keyword">int</span> src_output_;<span class="comment">//前驱节点的第src_output_条输出边</span></span><br><span class="line">    <span class="keyword">int</span> dst_input_;<span class="comment">//后继节点的第dst_output_条输入边</span></span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<p>控制依赖边，其<code>src_output/dst_output</code>均为<code>Graph::kControlSlot</code>(-1)，意味着控制依赖边不承载任何数据。</p>
+<p>计算图的普通边承载Tensor，并使用<code>TensorId</code>标识，TensorId由二元组<code>node_name:src_output</code>唯一标识，其中<code>node_name</code>为边的前驱节点。<code>src_output</code>缺省为0，即<code>node_name</code>与<code>node_name:0</code>等价，</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Graph</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Graph</span><span class="params">(<span class="keyword">const</span> OpRegistryInterface* ops)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">Graph</span><span class="params">(<span class="keyword">const</span> FunctionLibraryDefinition&amp; flib_def)</span></span>;</span><br><span class="line">    ~Graph();</span><br><span class="line"></span><br><span class="line">    <span class="keyword">static</span> <span class="keyword">const</span> <span class="keyword">int</span> kControlSlot; <span class="comment">// -1 控制边，不承载任何数据</span></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">set_versions</span><span class="params">(<span class="keyword">const</span> VersionDef&amp; versions)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Node* <span class="title">AddNode</span><span class="params">(NodeDef node_def, Status* status)</span></span>;</span><br><span class="line">    <span class="function">Node* <span class="title">CopyNode</span><span class="params">(<span class="keyword">const</span> Node* node)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">RemoveNode</span><span class="params">(Node* node)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">const</span> Edge* <span class="title">AddEdge</span><span class="params">(Node* source, <span class="keyword">int</span> x, Node* dest, <span class="keyword">int</span> y)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">const</span> Edge* <span class="title">AddControlEdge</span><span class="params">(Node* source, Node* dest, <span class="keyword">bool</span> allow_deuplicates=<span class="literal">false</span>)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">RemoveEdge</span><span class="params">(<span class="keyword">const</span> Edge* edge)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">RemoveControlEdge</span><span class="params">(<span class="keyword">const</span> Edge* edge)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="class"><span class="keyword">enum</span> &#123;</span>kSourceId = <span class="number">0</span>, kSinkId = <span class="number">1</span>&#125;;</span><br><span class="line">    <span class="function">Node* <span class="title">FindNodeId</span><span class="params">(<span class="keyword">int</span> id)</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> nodes_[id]; &#125;</span><br><span class="line">    <span class="function">Node* <span class="title">source_node</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> FindNodeId(kSourceId); &#125;</span><br><span class="line">    <span class="function">Node* <span class="title">sink_node</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123; <span class="keyword">return</span> FindNodeId(kSinkId); &#125;</span><br><span class="line">    </span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    FunctionLibraryDefinition ops_;</span><br><span class="line">    <span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;VersionDef&gt; versions_;</span><br><span class="line">    </span><br><span class="line">    core::Arena arena_;</span><br><span class="line">    <span class="built_in">vector</span>&lt;Node*&gt; nodes_;</span><br><span class="line">    int64 num_nodes_ = <span class="number">0</span>;</span><br><span class="line">    <span class="built_in">vector</span>&lt;Edge*&gt; edges_;</span><br><span class="line">    <span class="keyword">int</span> num_edges_ = <span class="number">0</span>;    </span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">Graph::Graph(<span class="keyword">const</span> OpRegistryInterface* ops) </span><br><span class="line">      : ops_(ops, FunctionDefLibrary()), </span><br><span class="line">        versions_(<span class="keyword">new</span> VersionDef),</span><br><span class="line">        arena_(<span class="number">8</span> &lt;&lt; <span class="number">10</span>) &#123;</span><br><span class="line">    <span class="comment">// versions_-&gt;set_procuder(...);</span></span><br><span class="line">    <span class="comment">// versions_-&gt;set_min_consumer(...);</span></span><br><span class="line"></span><br><span class="line">    device_names.push_back(<span class="string">&quot;&quot;</span>);</span><br><span class="line"></span><br><span class="line">    NodeDef def;</span><br><span class="line">    def.set_name(<span class="string">&quot;_SOURCE&quot;</span>);</span><br><span class="line">    def.set_op(<span class="string">&quot;NoOp&quot;</span>);</span><br><span class="line">    Node* source = AddNode(def, &amp;status);</span><br><span class="line">    def.set_name(<span class="string">&quot;_SINK&quot;</span>);</span><br><span class="line">    Node* sink = AddNode(def, &amp;status);</span><br><span class="line"></span><br><span class="line">    AddControlEdge(source, sink);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>Graph是一个DAG，按照拓扑排序运行，若存在多个入度为0的节点，则并行运行。初始状态，有一个起始节点Source和终止节点Sink，普通节点的id必大于1。</p>
+<p>Source和Sink之间有一个控制依赖边，保证计算图的执行始于Source，止于Sink。</p>
+]]></content>
+      <categories>
+        <category>源码阅读</category>
+      </categories>
+      <tags>
+        <tag>tensorflow</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>linux命令-grep</title>
+    <url>/02fabfb2f67c/</url>
+    <content><![CDATA[<h2 id="grep简介"><a href="#grep简介" class="headerlink" title="grep简介"></a>grep简介</h2><p>grep命令是一种强大的文本搜索工具，它能使用正则表达式搜索文本，并把匹配的行打印出来。grep全称是Global Regular Expression Print，表示全局正则表达式版本，它的使用权限是所有用户。</p>
+<p>grep在一个或多个文件中搜索字符串模板，如果模板包括空格，则必须使用引号引用，模板后的所有字符串被看作文件名。搜索的结果被送到标准输出，不影响原文件内容。</p>
+<p>grep可用于shell脚本，因为grep通过返回一个状态值来说明搜索的状态，如果模板搜索成功，则返回0，如果搜索不成功，则返回1，如果搜索的文件不存在，则返回2。我们利用这些返回值就可进行一些自动化的文本处理工作。</p>
+<p>shell中可以通过<code>$?</code>获取上一个命令的返回值。</p>
+<h2 id="grep用法"><a href="#grep用法" class="headerlink" title="grep用法"></a>grep用法</h2><figure class="highlight text"><table><tr><td class="code"><pre><span class="line">Usage: grep [OPTION]... PATTERN [FILE]...</span><br><span class="line">Search for PATTERN in each FILE.</span><br><span class="line">Example: grep -i &#x27;hello world&#x27; menu.h main.c</span><br></pre></td></tr></table></figure>
+
+<h2 id="grep参数"><a href="#grep参数" class="headerlink" title="grep参数"></a>grep参数</h2><table>
+<thead>
+<tr>
+<th>-参数</th>
+<th>–参数</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>-a</td>
+<td>–text</td>
+<td>搜索二进制数据</td>
+</tr>
+<tr>
+<td>-i</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+]]></content>
+      <categories>
+        <category>每天一个linux命令</category>
+      </categories>
+      <tags>
+        <tag>linux</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>git源码阅读</title>
+    <url>/b55797522dd3/</url>
+    <content><![CDATA[<h2 id="git源码获取"><a href="#git源码获取" class="headerlink" title="git源码获取"></a>git源码获取</h2><p><a href="https://github.com/git/git">https://github.com/git/git</a></p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># 查看第一个提交</span></span></span><br><span class="line">git log --date-order --reverse</span><br><span class="line"><span class="meta">#</span><span class="bash"><span class="comment"># 切换至第一个提交</span></span></span><br><span class="line">git checkout e83c5163316f89bfbde7d9ab23ca2e25604af290</span><br></pre></td></tr></table></figure>
+
+<h2 id="源码编译"><a href="#源码编译" class="headerlink" title="源码编译"></a>源码编译</h2><p>修改Makefile</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">-LIBS= -lssl</span><br><span class="line">+LIBS= -lssl -lz -lcrypto</span><br></pre></td></tr></table></figure>
+
+<p>编译</p>
+<figure class="highlight shell"><table><tr><td class="code"><pre><span class="line">make</span><br></pre></td></tr></table></figure>
+
+<h2 id="可执行程序"><a href="#可执行程序" class="headerlink" title="可执行程序"></a>可执行程序</h2><ul>
+<li>init-db</li>
+<li>update-cache</li>
+<li>read-tree</li>
+<li>write-tree</li>
+<li>cat-file</li>
+<li>commit-tree</li>
+<li>show-diff</li>
+</ul>
+<h3 id="init-db"><a href="#init-db" class="headerlink" title="init-db"></a>init-db</h3><p><code>init-db</code>同现代git中的<code>git init .</code>，在当前目录初始化仓库。</p>
+<ol>
+<li>创建目录<code>.dircache</code>。</li>
+<li>创建目录<code>.dircache/objects</code>。</li>
+<li>在<code>.dircache/objects</code>下创建目录<code>00~ff</code>共256个目录。</li>
+</ol>
+<h3 id="update-cache"><a href="#update-cache" class="headerlink" title="update-cache"></a>update-cache</h3><p>将工作区的修改提交到暂存区。</p>
+<ol>
+<li>读取并解析索引文件<code>.dircache/index</code>。</li>
+<li>遍历多个文件，读取并生成变更文件信息(文件名称、文件内容sha1值、日期、大小等)，写入到索引文件中。</li>
+<li>遍历多个文件，读取并压缩变更文件，存储到objects文件中，该文件为blob对象。</li>
+</ol>
+<h3 id="cat-file"><a href="#cat-file" class="headerlink" title="cat-file"></a>cat-file</h3><p>根据sha1值查看暂存区中的objects文件内容。objects内容为压缩格式，基于zlib压缩算法。</p>
+<ol>
+<li>根据传入的sha1值定位objects文件。</li>
+<li>读取该objects文件内容，解压得到真实数据。</li>
+<li>写入到临时文件<code>temp_git_file_xxxx</code>中。</li>
+</ol>
+]]></content>
+      <categories>
+        <category>源码阅读</category>
+      </categories>
+      <tags>
+        <tag>git</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Google C++风格指南</title>
+    <url>/0de110b700af/</url>
+    <content><![CDATA[<h2 id="头文件"><a href="#头文件" class="headerlink" title="头文件"></a>头文件</h2><h3 id="self-contained头文件"><a href="#self-contained头文件" class="headerlink" title="self-contained头文件"></a>self-contained头文件</h3><p>头文件需要自给自足，头文件本身应当是能编译的（个人理解时在没有源文件<code>.cxx</code>的情况也能编译通过）。</p>
+<p>头文件应当用<code>#define</code>保护，并包含其所需要的所有其他头文件。</p>
+<p>模板和内联函数的定义和声明应当处于同一文件内。</p>
+<h3 id="define保护"><a href="#define保护" class="headerlink" title="define保护"></a>define保护</h3><p>所有头文件都应该使用<code>#define</code>防止文件被多重包含，并且为了保证唯一性，宏命名应当基于所在项目源码的全路径，格式应当为<code>&lt;PROJECT&gt;_&lt;PATH&gt;_&lt;FILE&gt;_H_</code>。</p>
+<h3 id="引入所有使用的头文件"><a href="#引入所有使用的头文件" class="headerlink" title="引入所有使用的头文件"></a>引入所有使用的头文件</h3><p>不要依赖于<code>include</code>传递，如果<code>foo.cxx</code>文件使用了<code>bar.h</code>中的符号，就应当在<code>foo.cxx</code>中引入<code>bar.h</code>，即使在<code>bar.h</code>已经引入了。</p>
+<p>也就是说，尽量在源文件中引入库，而不是在对应的头文件中引入，目的是为了减少引入依赖。例如当<code>A.cxx</code>依赖于<code>B.h</code>时，对<code>B.h</code>的任何修改都会导致<code>A.cxx</code>的重新构建，而此时<code>B.cxx</code>依赖于<code>C.h</code>，那么我们现在有两个选择，一是在<code>B.cxx</code>中引入<code>C.h</code>，二是在<code>B.h</code>中引入<code>C.h</code>。若选择第二种，我们对<code>C.h</code>的任何修改都会导致<code>A.cxx</code>的重新构建，若选择第一种，则不会触发<code>A.cxx</code>的重新构建。</p>
+<h3 id="前置声明"><a href="#前置声明" class="headerlink" title="前置声明"></a>前置声明</h3><p>前置声明是指类、函数和模板不带有定义的纯粹声明，应当避免使用前置声明，将声明放在头文件中，然后<code>#include</code>。</p>
+<ul>
+<li>优点<ul>
+<li>前置声明能够节省编译时间。</li>
+<li>前置声明能节省不必要的重新编译时间，使用<code>#include</code>会使得代码由于头文件中无关改动而被重新编译。</li>
+</ul>
+</li>
+<li>缺点<ul>
+<li>前置声明隐藏依赖关系，头文件改动时，源文件会跳过必要的重新编译过程。</li>
+<li>前置声明可能被库的后续更改所破坏。</li>
+<li>前置声明来自<code>std::</code>中的符号时，行为未定义。</li>
+<li>前置声明甚至会改变代码含义。</li>
+<li>重构代码更为复杂和困难。</li>
+</ul>
+</li>
+</ul>
+<h3 id="内联函数"><a href="#内联函数" class="headerlink" title="内联函数"></a>内联函数</h3><ul>
+<li>经验：<ul>
+<li>只有函数不多于10行时才将其定义为内联函数</li>
+<li>不要内联包含循环和<code>switch</code>的函数</li>
+<li>不要内联递归函数</li>
+<li>即使声明为内联函数，编译器也不一定会接受</li>
+<li>类声明内定义的函数默认为内联函数</li>
+</ul>
+</li>
+</ul>
+<h3 id="include的路径和顺序"><a href="#include的路径和顺序" class="headerlink" title="include的路径和顺序"></a>include的路径和顺序</h3><p>避免使用<code>.</code>和<code>..</code>，按照项目源码路径完整<code>include</code>。</p>
+<ul>
+<li>内联顺序：<ol>
+<li>同名头文件</li>
+<li>C系统文件</li>
+<li>C++系统文件</li>
+<li>其他库<code>.h</code></li>
+<li>本项目<code>.h</code></li>
+</ol>
+</li>
+</ul>
+<p>这种优先顺序保证了当<code>.h</code>文件遗漏某些库时，源文件的构建会立刻终止。</p>
+<p>不同类型的头文件空格分隔。</p>
+<p>例外情况，条件编译绝对是否引入库，如不同平台。</p>
+<h2 id="作用域"><a href="#作用域" class="headerlink" title="作用域"></a>作用域</h2><h3 id="命名空间"><a href="#命名空间" class="headerlink" title="命名空间"></a>命名空间</h3><p>C++中的全局函数和全局变量的作用域是整个项目，为了限制其作用域，一种做法是使用<code>static</code>关键字修饰，另一种是使用命名空间。</p>
+<p>在不需要外部访问的情况下，C++标准提倡使用匿名命名空间，禁止使用<code>using</code>引入命名空间，禁止使用内联命名空间。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">namespace</span> X&#123;</span><br><span class="line">    <span class="keyword">inline</span> <span class="keyword">namespace</span> Y&#123;</span><br><span class="line">        <span class="function"><span class="keyword">void</span> <span class="title">foo</span><span class="params">()</span></span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 别名</span></span><br><span class="line"><span class="keyword">namespace</span> baz = ::foo::bar::baz;</span><br></pre></td></tr></table></figure>
+
+<p>在内联命名空间中，<code>X::Y::foo()</code>与<code>X::foo()</code>等价，其目的主要是用来兼容跨版本API。</p>
+<p>命名空间使用策略：</p>
+<ul>
+<li>遵循命名空间命名规范</li>
+<li>命名空间结束时，使用注释</li>
+<li>命名空间应当在头文件、gflag声明与定义、其他空间的类前置声明之后</li>
+<li>禁止在<code>std</code>内声明任何东西，属于未定义行为，导致不可移植</li>
+<li>禁止在头文件中使用命名空间别名，除非限制在内部命名空间中使用</li>
+<li>禁止使用<code>using</code>引入命名空间</li>
+<li>禁止使用内联命名空间</li>
+</ul>
+<h3 id="匿名命名空间与静态变量"><a href="#匿名命名空间与静态变量" class="headerlink" title="匿名命名空间与静态变量"></a>匿名命名空间与静态变量</h3><p>在<code>cxx</code>中定义不需要被外部引用的符号时，可以放在匿名命名空间或声明为<code>static</code>，但不要在头文件中这样做。</p>
+<h3 id="非成员函数、静态成员函数、全局函数"><a href="#非成员函数、静态成员函数、全局函数" class="headerlink" title="非成员函数、静态成员函数、全局函数"></a>非成员函数、静态成员函数、全局函数</h3><p>使用静态成员或命名空间内的非成员函数，不要使用裸的全局函数，不要用类的静态方法模拟命名空间效果，类的静态方法应当与类的实例或静态数据密切相关。</p>
+<p>非成员函数置于命名空间避免污染全局作用域。</p>
+<h3 id="局部变量"><a href="#局部变量" class="headerlink" title="局部变量"></a>局部变量</h3><p>将函数变量尽可能放在最小作用域内，在变量声明时进行初始化。</p>
+<p>除非变量是一个对象，每次进入作用域都需要调用构造函数，退出作用域调用析构函数。</p>
+<h3 id="静态和全局变量"><a href="#静态和全局变量" class="headerlink" title="静态和全局变量"></a>静态和全局变量</h3><p>静态生存周期的对象，包括全局变量、静态变量、静态类成员、函数静态变量，必须是原生数据类型(POD, Plain Old Data)。</p>
+<p>在多编译单元中，静态变量的构造、析构和初始化顺序在C++中只有部分是明确的，甚至随着构建发生变化，导致难以发现的bug，禁止使用类的静态存储周期变量。</p>
+<p>在同一编译单元中顺序是明确的，静态初始化优于动态初始化、初始化顺序按照声明顺序进行，逆序销毁，不同编译单元内，属于未明确行为。</p>
+<p>多线程时，静态生存周期不要使用非POD的对象以及STL容器。</p>
+<h2 id="类"><a href="#类" class="headerlink" title="类"></a>类</h2><h3 id="构造函数"><a href="#构造函数" class="headerlink" title="构造函数"></a>构造函数</h3><p>不要在构造函数中调用虚函数，也不要在无法报错时进行可能失败的初始化。</p>
+<p>构造函数内调用自身的虚函数并不会重定向到子类的虚函数实现。</p>
+<p>如果执行失败，可能会得到一个初始化失败的对象，这个对象可能无法进入到正常状态。</p>
+<p>如果对象需要进行初始化，通过定义<code>Init()</code>方法或工厂方法进行创建并初始化。</p>
+<h3 id="隐式类型转换"><a href="#隐式类型转换" class="headerlink" title="隐式类型转换"></a>隐式类型转换</h3><p>一脸懵比</p>
+<h3 id="可拷贝类型和可移动类型"><a href="#可拷贝类型和可移动类型" class="headerlink" title="可拷贝类型和可移动类型"></a>可拷贝类型和可移动类型</h3><p>如果不需要，禁用隐式生成的拷贝和移动构造函数。</p>
+<h3 id="结构体-类"><a href="#结构体-类" class="headerlink" title="结构体/类"></a>结构体/类</h3><p>仅当只有数据成员和重载运算符时使用<code>struct</code>，其他一概使用<code>class</code>。</p>
+<h2 id="TODO"><a href="#TODO" class="headerlink" title="TODO"></a>TODO</h2><h2 id="函数"><a href="#函数" class="headerlink" title="函数"></a>函数</h2><h3 id="参数顺序"><a href="#参数顺序" class="headerlink" title="参数顺序"></a>参数顺序</h3><p>输入参数在前，输出参数在后。</p>
+<h3 id="简短函数"><a href="#简短函数" class="headerlink" title="简短函数"></a>简短函数</h3><p>优先编写简短函数，若行数超过四十行考虑分离。</p>
+<h3 id="引用参数"><a href="#引用参数" class="headerlink" title="引用参数"></a>引用参数</h3><p>引用必须用<code>const</code>，对变量进行修改传指针。除非特殊要求，如<code>swap()</code>。</p>
+<h3 id="函数重载"><a href="#函数重载" class="headerlink" title="函数重载"></a>函数重载</h3><p>函数重载尽量能够简单明了，尽量不要改变相同数量的参数类型来进行重载。可以考虑在函数名中加入类型信息。</p>
+<h3 id="缺省参数"><a href="#缺省参数" class="headerlink" title="缺省参数"></a>缺省参数</h3><p>只允许在非虚函数中使用缺省参数，尽可能使用函数重载而非缺省参数。</p>
+<p>优点：</p>
+<ul>
+<li>降低代码量，降低代码修改时的工作量，函数重载需要修改多个函数。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>虚函数调用的缺省参数取决于目标对象的静态类型，无法保证给定函数的所有重载声明的都是同样的缺省参数。</li>
+<li>缺省参数会干扰函数指针，导致函数签名与调用点签名不一致。</li>
+<li>缺省参数每次调用都需要重新求值,导致生成的代码膨胀。</li>
+</ul>
+<h3 id="函数返回类型后置语法"><a href="#函数返回类型后置语法" class="headerlink" title="函数返回类型后置语法"></a>函数返回类型后置语法</h3><p>只有常规写法不便于书写或阅读时才使用返回类型后置语法。</p>
+<figure class="highlight"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">foo</span><span class="params">(<span class="keyword">int</span> x)</span></span>;</span><br><span class="line">auto foo(int x) -&gt; int;</span><br></pre></td></tr></table></figure>
+
+<p>优点：</p>
+<ul>
+<li>后置返回类型是显示指定Lambda表达式返回值类型的唯一方式，通常情况下编译器能够自动推导出Lambda表达式的返回类型，但并不是所有情况。</li>
+</ul>
+<p>缺点：</p>
+<ul>
+<li>陌生，与原始代码看起来不协调（黑人问号？）</li>
+</ul>
+<h2 id="G式奇淫技巧"><a href="#G式奇淫技巧" class="headerlink" title="G式奇淫技巧"></a>G式奇淫技巧</h2><h3 id="所有权与智能指针"><a href="#所有权与智能指针" class="headerlink" title="所有权与智能指针"></a>所有权与智能指针</h3><p>C++11后时代C++程序员的常识题，不要使用<code>std::auto_ptr</code>，使用<code>std::unique_ptr</code>或<code>std::shared_ptr</code>，倾向于前者。</p>
+<h3 id="Cpplint"><a href="#Cpplint" class="headerlink" title="Cpplint"></a>Cpplint</h3><p>风格检查<a href="https://github.com/google/styleguide/blob/gh-pages/cpplint/cpplint.py">cpplint.py</a></p>
+<h2 id="命名规范"><a href="#命名规范" class="headerlink" title="命名规范"></a>命名规范</h2><h3 id="通用命名规则"><a href="#通用命名规则" class="headerlink" title="通用命名规则"></a>通用命名规则</h3><p>描述性命名，如果你也曾被前人项目中的缩写整懵比那就少用缩写，如果实在需要，请在声明位置加注释。</p>
+<h3 id="文件命名"><a href="#文件命名" class="headerlink" title="文件命名"></a>文件命名</h3><p>全部小写，下划线<code>_</code>连接。不要与<code>/usr/include</code>下的文件重名。</p>
+<p>内联函数放在<code>.h</code>文件中。</p>
+<h3 id="类型命名"><a href="#类型命名" class="headerlink" title="类型命名"></a>类型命名</h3><p>类、结构体、类型定义、枚举、类型模板参数。每个单词首字母大写，不应包含下划线。</p>
+<h3 id="变量命名"><a href="#变量命名" class="headerlink" title="变量命名"></a>变量命名</h3><p>变量与数据成员一律小写，单词之间用下划线连接，类的成员变量用下划线结尾，结构体变量与普通变量一致，无需加下划线。</p>
+<h3 id="常量命名"><a href="#常量命名" class="headerlink" title="常量命名"></a>常量命名</h3><p>声明为<code>constexpr</code>和<code>const</code>的变量，或在程序运行i期间其值始终保持不变的以<code>k</code>开头，大小写混合。</p>
+<h3 id="函数命名"><a href="#函数命名" class="headerlink" title="函数命名"></a>函数命名</h3><p>常规函数大小写混合，取值或设值要求与变量名匹配，如<code>set_num()</code>，<code>get_num()</code>。</p>
+<p>对于函数名中出现的单词缩写倾向于全部用大写<code>StartRPC()</code>。</p>
+<h3 id="命名空间命名"><a href="#命名空间命名" class="headerlink" title="命名空间命名"></a>命名空间命名</h3><p>命名空间以小写字母命名，最高级命名空间取决于项目名称或团队名，避免嵌套命名空间与上层命名空间之间存在冲突。</p>
+<p>命名空间中的代码，应当存放于与命名空间的名字匹配的文件夹或其子文件夹中。</p>
+<p>不要使用缩写。</p>
+<h3 id="枚举命名"><a href="#枚举命名" class="headerlink" title="枚举命名"></a>枚举命名</h3><p>枚举命名与常量或宏保持一致<code>kEnumName</code>、<code>ENUM_NAME</code>。优先采用常量命名方式。</p>
+<h2 id="宏命名"><a href="#宏命名" class="headerlink" title="宏命名"></a>宏命名</h2><p>参见<a href="">不要用宏</a>，如果不得不适用，全部大写，下划线连接。</p>
+<h3 id="注释风格"><a href="#注释风格" class="headerlink" title="注释风格"></a>注释风格</h3><p>项目统一风格<code>//</code>或<code>/* */</code></p>
+<p>写好<code>TODO</code>、<code>FIX</code>、<code>DEPRECATED</code></p>
+<h3 id="我是不可能写注释的，告辞"><a href="#我是不可能写注释的，告辞" class="headerlink" title="我是不可能写注释的，告辞"></a>我是不可能写注释的，告辞</h3>]]></content>
+      <categories>
+        <category>C++</category>
+      </categories>
+      <tags>
+        <tag>C++编码规范</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>__attribute__那些事</title>
+    <url>/3d612df5b918/</url>
+    <content><![CDATA[]]></content>
+  </entry>
+  <entry>
+    <title>C++宏定义的那些事</title>
+    <url>/a356e4783099/</url>
+    <content><![CDATA[<h2 id="宏定义"><a href="#宏定义" class="headerlink" title="宏定义"></a>宏定义</h2><p>宏定义将一个标识符定义为一个字符串，源代码中的标识符将被指定的字符串替换，这个过程发生在预处理阶段。<br>发方<br>C++程序的完整编译过程包括预处理、编译、汇编、链接四个步骤。其中预处理阶段进行宏展开、条件编译等。</p>
+<p>在C语言中，通过宏来定义简单函数，可以降低函数调用过程中的开销，而在c++中，可以用<code>inline</code>来声明内联函数来降低函数调用过程的开销。</p>
+<p>也可以通过宏来定义一些常量，但由于宏替换发生在预处理阶段，因此如果在编译过程中产生错误，很难进行错误的定位和溯源。</p>
+<h2 id="简单的宏定义"><a href="#简单的宏定义" class="headerlink" title="简单的宏定义"></a>简单的宏定义</h2><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">//第一种</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> PI2 3.1415926</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Add(x) x+1 <span class="comment">//错误示范</span></span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Double(x) (x*2) <span class="comment">//错误示范</span></span></span><br><span class="line"><span class="comment">// Add(x) * 2 ==&gt; x + 1 * 2</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Add(x) ((x)+1)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> Double(x) ((x)*2)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">//第二种</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> SOURCE_H</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> SOURCE_H</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> TEST</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifdef</span> TEST</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">&quot;this is a TEST &quot;</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">ifndef</span> TEST</span></span><br><span class="line"><span class="built_in">std</span>::<span class="built_in">cout</span> &lt;&lt; <span class="string">&quot;there are not TEST&quot;</span> &lt;&lt; <span class="built_in">endl</span>;</span><br><span class="line"><span class="meta">#<span class="meta-keyword">endif</span></span></span><br></pre></td></tr></table></figure>
+
+<p>宏的两种简单用法如上所示，第一种用法将<code>PI</code>全部替换为<code>3.1415926</code>，这里的替换是直接展开的，如错误示范中所示，因此我们在使用宏定义时，要利用括号保证其在展开时不会产生错误。</p>
+<p>第二种用法通过宏定义来实现条件编译、避免头文件的重复引入。</p>
+<h2 id="宏的高阶用法"><a href="#宏的高阶用法" class="headerlink" title="宏的高阶用法"></a>宏的高阶用法</h2><p><code>#</code>、<code>##</code>、<code>#@</code>三种可以称之为宏的高阶用法，可以实现许多高级特性。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> STRING(msg) #msg</span></span><br><span class="line"><span class="keyword">char</span>* str = <span class="string">&quot;hello&quot;</span>;</span><br><span class="line"><span class="keyword">char</span>* str = STRING(hello);  <span class="comment">//二者等价</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CHAR(ch) #@ch</span></span><br><span class="line"><span class="keyword">char</span> ch = <span class="string">&#x27;a&#x27;</span>;</span><br><span class="line"><span class="keyword">char</span> ch = CHAR(a); <span class="comment">//二者等价</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> </span></span><br></pre></td></tr></table></figure>
+
+<p>当宏中遇到<code>#</code>和<code>##</code>时，是不能够进行嵌套替换的，不会对<code>#</code>和<code>##</code>之后宏进行展开。</p>
+<h2 id="可变参数宏"><a href="#可变参数宏" class="headerlink" title="可变参数宏"></a>可变参数宏</h2><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="meta-keyword">define</span> VARGS_(_10, _9, _8, _7, _6, _5, _4, _3, _2, _1, N, ...) N</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> VARGS(...) VARGS_(__VA_ARGS__, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CONCAT_(a, b) a ### b</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> CONCAT(a, b) CONCAT_(a, b) <span class="comment">// 由于##会阻止宏的展开，因此两次宏替换解决宏的嵌套问题</span></span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> FUNC_3(prefix, name, n) func(prefix, name, n)</span></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> FUNC_2(prefix, name) FUNC_3(prefix, name, 1)</span></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> FUNC(...) CONCAT(<span class="meta-string">&quot;FUNC_&quot;</span>, VARGS(__VA_ARGS__))(__VA_ARGS__)</span></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="comment">// 从而实现如下变参宏</span></span><br><span class="line">FUNC(prefix, name, <span class="number">4</span>)</span><br><span class="line">FUNC(prefix, name)</span><br></pre></td></tr></table></figure>
+
+<h2 id="工厂宏"><a href="#工厂宏" class="headerlink" title="工厂宏"></a>工厂宏</h2><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Any</span> &#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    Any() : _var_ptr(<span class="literal">NULL</span>) &#123;&#125;</span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">    Any(<span class="keyword">const</span> T&amp; value) : _var_ptr(<span class="keyword">new</span> Type&lt;T&gt;(value)) &#123;&#125;</span><br><span class="line">    Any(<span class="keyword">const</span> Any&amp; other) : _var_ptr(other._var_ptr ? other._var_ptr-&gt;clone() : <span class="literal">NULL</span>) &#123;&#125;</span><br><span class="line">    ~Any() &#123;</span><br><span class="line">        <span class="keyword">delete</span> _var_ptr;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">    <span class="function">T* <span class="title">any_cast</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> _var_ptr ? &amp;<span class="keyword">static_cast</span>&lt;Type &lt;T&gt;*&gt;(_var_ptr)-&gt;_var : <span class="literal">NULL</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Typeless</span> &#123;</span></span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="keyword">virtual</span> ~Typeless() &#123;&#125;</span><br><span class="line">        <span class="function"><span class="keyword">virtual</span> Typeless* <span class="title">clone</span><span class="params">()</span> <span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="comment">/// @brief Type calss template to hold a specific type</span></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">Type</span> :</span> <span class="keyword">public</span> Typeless &#123;</span><br><span class="line">    <span class="keyword">public</span>:</span><br><span class="line">        <span class="function"><span class="keyword">explicit</span> <span class="title">Type</span><span class="params">(<span class="keyword">const</span> T&amp; value)</span> : _<span class="title">var</span><span class="params">(value)</span> </span>&#123;&#125;</span><br><span class="line">        <span class="function"><span class="keyword">virtual</span> Typeless* <span class="title">clone</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;</span><br><span class="line">            <span class="keyword">return</span> <span class="keyword">new</span> Type(_var);</span><br><span class="line">        &#125;</span><br><span class="line">        T _var;             <span class="comment">///&lt; The real variable of a specific type</span></span><br><span class="line">    &#125;;</span><br><span class="line">    Typeless* _var_ptr;     <span class="comment">///&lt; Typeless variable pointer</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ConcreteFactory</span> &#123;</span></span><br><span class="line">    <span class="function"><span class="keyword">typedef</span> <span class="title">Any</span> <span class="params">(* FactoryIntf)</span><span class="params">()</span></span>;  <span class="comment">/// a Function Pointer </span></span><br><span class="line"></span><br><span class="line">    FactoryIntf get_instance;      <span class="comment">///&lt; Function pointer to get instance</span></span><br><span class="line">    FactoryIntf get_singleton;     <span class="comment">///&lt; Function pointer to get singleton</span></span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, ConcreteFactory&gt; FactoryMap;</span><br><span class="line"><span class="keyword">typedef</span> <span class="built_in">std</span>::<span class="built_in">map</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>, FactoryMap&gt; BaseClassMap;</span><br><span class="line"></span><br><span class="line"><span class="function">BaseClassMap&amp; <span class="title">g_factory_map</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">static</span> BaseClassMap base_class_map;    </span><br><span class="line">    <span class="keyword">return</span> base_class_map;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> REGISTER_FACTORY(base_class) \</span></span><br><span class="line">    <span class="class"><span class="keyword">class</span> <span class="title">base_class</span> ### <span class="title">Factory</span> &#123;</span> \</span><br><span class="line">    <span class="keyword">public</span>: \</span><br><span class="line">        <span class="function"><span class="keyword">static</span> base_class *<span class="title">get_instance</span><span class="params">(<span class="keyword">const</span> ::<span class="built_in">std</span>::<span class="built_in">string</span> &amp;name)</span> </span>&#123; \</span><br><span class="line">            FactoryMap &amp;<span class="built_in">map</span> = g_factory_map()[#base_class]; \</span><br><span class="line">            FactoryMap::iterator iter = <span class="built_in">map</span>.find(name); \</span><br><span class="line">            <span class="keyword">if</span> (iter == <span class="built_in">map</span>.end()) &#123; \</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">NULL</span>; \</span><br><span class="line">            &#125; \</span><br><span class="line">            Any object = iter-&gt;second.get_instance(); \</span><br><span class="line">            <span class="keyword">return</span> *(object.any_cast&lt;base_class*&gt;()); \</span><br><span class="line">        &#125; \</span><br><span class="line">        <span class="function"><span class="keyword">static</span> base_class* <span class="title">get_singleton</span><span class="params">(<span class="keyword">const</span> ::<span class="built_in">std</span>::<span class="built_in">string</span>&amp; name)</span> </span>&#123; \</span><br><span class="line">            FactoryMap&amp; <span class="built_in">map</span> = g_factory_map()[#base_class]; \</span><br><span class="line">            FactoryMap::iterator iter = <span class="built_in">map</span>.find(name); \</span><br><span class="line">            <span class="keyword">if</span> (iter == <span class="built_in">map</span>.end()) &#123; \</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">NULL</span>; \</span><br><span class="line">            &#125;\</span><br><span class="line">            Any object = iter-&gt;second.get_singleton(); \</span><br><span class="line">            <span class="keyword">return</span> *(object.any_cast&lt;base_class*&gt;()); \</span><br><span class="line">        &#125; \</span><br><span class="line">        <span class="keyword">static</span> <span class="keyword">const</span> ::<span class="function"><span class="built_in">std</span>::<span class="built_in">string</span> <span class="title">get_uniq_instance_name</span><span class="params">()</span> </span>&#123; \</span><br><span class="line">            FactoryMap &amp;<span class="built_in">map</span> = g_factory_map()[#base_class]; \</span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">map</span>.empty() || <span class="built_in">map</span>.size() != <span class="number">1</span>) &#123; \</span><br><span class="line">                <span class="keyword">return</span> <span class="string">&quot;&quot;</span>; \</span><br><span class="line">            &#125; \</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">map</span>.begin()-&gt;first; \</span><br><span class="line">        &#125; \</span><br><span class="line">        <span class="function"><span class="keyword">static</span> base_class *<span class="title">get_uniq_instance</span><span class="params">()</span> </span>&#123; \</span><br><span class="line">            FactoryMap &amp;<span class="built_in">map</span> = g_factory_map()[#base_class]; \</span><br><span class="line">            <span class="keyword">if</span> (<span class="built_in">map</span>.empty() || <span class="built_in">map</span>.size() != <span class="number">1</span>) &#123; \</span><br><span class="line">                <span class="keyword">return</span> <span class="literal">NULL</span>; \</span><br><span class="line">            &#125; \</span><br><span class="line">            Any object = <span class="built_in">map</span>.begin()-&gt;second.get_instance(); \</span><br><span class="line">            <span class="keyword">return</span> *(object.any_cast&lt;base_class*&gt;()); \</span><br><span class="line">        &#125; \</span><br><span class="line">        <span class="function"><span class="keyword">static</span> <span class="keyword">bool</span> <span class="title">is_valid</span><span class="params">(<span class="keyword">const</span> ::<span class="built_in">std</span>::<span class="built_in">string</span> &amp;name)</span> </span>&#123; \</span><br><span class="line">            FactoryMap &amp;<span class="built_in">map</span> = g_factory_map()[#base_class]; \</span><br><span class="line">            <span class="keyword">return</span> <span class="built_in">map</span>.find(name) != <span class="built_in">map</span>.end(); \</span><br><span class="line">        &#125; \</span><br><span class="line">        <span class="function"><span class="keyword">static</span> <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; <span class="title">list_class</span><span class="params">()</span> </span>&#123;\</span><br><span class="line">            <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;<span class="built_in">std</span>::<span class="built_in">string</span>&gt; ret; \</span><br><span class="line">            <span class="keyword">auto</span> &amp;m = g_factory_map()[#base_class]; \</span><br><span class="line">            <span class="keyword">for</span> (<span class="keyword">auto</span>&amp; iter : m) &#123; \</span><br><span class="line">              ret.emplace_back(iter.first);\</span><br><span class="line">            &#125;\</span><br><span class="line">            <span class="keyword">return</span> ret;\</span><br><span class="line">        &#125;\</span><br><span class="line">    &#125;; \</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="meta">#<span class="meta-keyword">define</span> REGISTER_CLASS(base_class, sub_class) \</span></span><br><span class="line">    <span class="keyword">namespace</span> &#123; \</span><br><span class="line">    Any sub_class##get_instance() &#123; \</span><br><span class="line">        <span class="keyword">return</span> Any(<span class="keyword">new</span> sub_class()); \</span><br><span class="line">    &#125; \</span><br><span class="line">    Any sub_class##get_singleton() &#123; \</span><br><span class="line">        <span class="keyword">return</span> Any(Singleton&lt;sub_class&gt;::get()); \</span><br><span class="line">    &#125; \</span><br><span class="line">    __attribute__((constructor)) <span class="keyword">void</span> register_factory_##sub_class() &#123; \</span><br><span class="line">        FactoryMap &amp;<span class="built_in">map</span> = g_factory_map()[#base_class]; \</span><br><span class="line">        <span class="keyword">if</span> (<span class="built_in">map</span>.find(#sub_class) == <span class="built_in">map</span>.end()) &#123; \</span><br><span class="line">            ConcreteFactory factory = &#123;&amp;sub_class##get_instance, \</span><br><span class="line">                                                 &amp;sub_class##get_singleton&#125;; \</span><br><span class="line">            <span class="built_in">map</span>[#sub_class] = factory; \</span><br><span class="line">        &#125; \</span><br><span class="line">    &#125; \</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">typedef</span> <span class="title">char</span> <span class="params">(*func)</span><span class="params">(<span class="keyword">int</span>)</span></span>; <span class="comment">//函数指针</span></span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>C++相关</category>
+      </categories>
+      <tags>
+        <tag>C++</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>tf serving源码阅读</title>
+    <url>/02f87d68cb80/</url>
+    <content><![CDATA[<h2 id="TF-Serving简介"><a href="#TF-Serving简介" class="headerlink" title="TF-Serving简介"></a>TF-Serving简介</h2><p>TensorFlow Serving是一个用于在生产环境中部署机器学习模型的应用系统，原生集成了TensorFlow模型，也可以扩展以应用其他类型的模型和数据。</p>
+<h2 id="TF-Serving架构"><a href="#TF-Serving架构" class="headerlink" title="TF-Serving架构"></a>TF-Serving架构</h2><p><img src="https://www.tensorflow.org/tfx/serving/images/serving_architecture.svg?hl=zh-cn" alt="tf serving 架构"></p>
+<ul>
+<li>Servables</li>
+<li>Loaders</li>
+<li>Sources</li>
+<li>Managers</li>
+<li>Core</li>
+</ul>
+<h3 id="Servable"><a href="#Servable" class="headerlink" title="Servable"></a>Servable</h3><p>Servable是TF-Serving核心的对模型的抽象，Servable的大小和粒度都很灵活，任何能提供算法或数据查询的实体都可以抽象为Servable，服务可以是任何类型和接口。Servable不负责管理自己的生命周期，而是交由Manager管理。</p>
+<p>典型的Servables包括：</p>
+<ul>
+<li>TesnorFlow SavedModelBundle</li>
+<li>Embeddings查找表或词查找表</li>
+</ul>
+<h4 id="Servable相关的数据结构"><a href="#Servable相关的数据结构" class="headerlink" title="Servable相关的数据结构"></a>Servable相关的数据结构</h4><h5 id="tensorflow-serving-ServableId"><a href="#tensorflow-serving-ServableId" class="headerlink" title="tensorflow.serving.ServableId"></a>tensorflow.serving.ServableId</h5><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ServableId</span>&#123;</span></span><br><span class="line">    <span class="built_in">string</span> name;</span><br><span class="line">    int64 version;</span><br><span class="line">    <span class="function"><span class="built_in">string</span> <span class="title">DebugString</span><span class="params">()</span></span>&#123;&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h5 id="tensorflow-serving-ServableData"><a href="#tensorflow-serving-ServableData" class="headerlink" title="tensorflow.serving.ServableData"></a>tensorflow.serving.ServableData</h5><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ServableData</span>&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ServableData(<span class="keyword">const</span> ServableId&amp;, T data);</span><br><span class="line">    <span class="function">T&amp; <span class="title">DataorDie</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function">T <span class="title">ConsumeDataorDie</span><span class="params">()</span></span>;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    ServableData()=<span class="keyword">delete</span>;</span><br><span class="line">    <span class="keyword">const</span> ServableId id_;</span><br><span class="line">    <span class="keyword">const</span> Status status_;</span><br><span class="line">    T data_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h5 id="tensorflow-serving-ServableHandle"><a href="#tensorflow-serving-ServableHandle" class="headerlink" title="tensorflow.serving.ServableHandle"></a>tensorflow.serving.ServableHandle</h5><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">UntypedServableHandle</span>&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">const</span> ServableId&amp; <span class="title">id</span><span class="params">()</span><span class="keyword">const</span> </span>= <span class="number">0</span>;</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> AnyPtr <span class="title">servable</span><span class="params">()</span></span>=<span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="keyword">template</span> &lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">ServableHandle</span>&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">const</span> ServableId&amp; <span class="title">id</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;<span class="keyword">return</span> untyped_handle_-&gt;id();&#125;</span><br><span class="line">    T&amp; <span class="keyword">operator</span>*() <span class="keyword">const</span> &#123;<span class="keyword">return</span> *get();&#125;</span><br><span class="line">    T* <span class="keyword">operator</span>-&gt;() <span class="keyword">const</span> &#123;<span class="keyword">return</span> get();&#125;</span><br><span class="line">    <span class="function">T* <span class="title">get</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;<span class="keyword">return</span> servalbe_;&#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">friend</span> <span class="class"><span class="keyword">class</span> <span class="title">Manager</span>;</span></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;UntypedServableHandle&gt; Untyped_handle_;</span><br><span class="line">    T* servable_ = <span class="literal">nullptr</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SharedPtrHandle</span>:</span> <span class="keyword">public</span> UntypedServableHandle&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    ~SharedPtrHandle() <span class="keyword">override</span> = <span class="keyword">default</span>;</span><br><span class="line">    <span class="function"><span class="keyword">explicit</span> <span class="title">SharedPtrHandle</span><span class="params">(<span class="keyword">const</span> ServableId&amp; id, <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Loader&gt; loader)</span></span></span><br><span class="line">        : id_(id), loader_(std::move(loader)) &#123;&#125;</span><br><span class="line">    <span class="function">AnyPtr <span class="title">servable</span><span class="params">()</span> <span class="keyword">override</span> </span>&#123; <span class="keyword">return</span> loader_-&gt;servable(); &#125;</span><br><span class="line">    <span class="function"><span class="keyword">const</span> ServableId&amp; <span class="title">id</span><span class="params">()</span> <span class="keyword">const</span> <span class="keyword">override</span> </span>&#123; <span class="keyword">return</span> id_; &#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">const</span> ServableId id_;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">shared_ptr</span>&lt;Loader&gt; loader_;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h5 id="tensorflow-serving-ServableState"><a href="#tensorflow-serving-ServableState" class="headerlink" title="tensorflow.serving.ServableState"></a>tensorflow.serving.ServableState</h5><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">ServableState</span>&#123;</span></span><br><span class="line">    ServableId id;</span><br><span class="line">    <span class="class"><span class="keyword">enum</span> <span class="keyword">class</span> <span class="title">ManagerState</span> :</span> <span class="keyword">int</span> &#123;</span><br><span class="line">        kStart, kLoading, kAvailable, kUnloading, kEnd,</span><br><span class="line">    &#125;;</span><br><span class="line">    <span class="function"><span class="keyword">static</span> <span class="built_in">string</span> <span class="title">ManagerStateString</span><span class="params">(ManagerState state)</span></span>&#123;...&#125;</span><br><span class="line">    MangerState manager_state;</span><br><span class="line">    Status health;</span><br><span class="line">    <span class="function"><span class="built_in">string</span> <span class="title">DebugString</span><span class="params">()</span> <span class="keyword">const</span> </span>&#123;...&#125;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Loader"><a href="#Loader" class="headerlink" title="Loader"></a>Loader</h3><p>Loader对Servable的生命周期进行控制，包括load/unload接口、资源预估接口等，加载后的Servable也存在Loader里面。Loader也用于扩展算法和数据后端（Tensorflow是其中一种）。当我们要添加一个新的backends时（如Pytorch等），需要为其实现一个新的Loader，以用于加载、卸载模型。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="comment">//表示一个从storage加载的一个SavedModel</span></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">SavedModelBundleInterface</span>&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~SavedModelBundleInterface();</span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> Session* <span class="title">GetSession</span><span class="params">()</span></span>=<span class="number">0</span>;</span><br><span class="line">    virtual const protobuf::Map&lt;string, SignatureDef&gt;&amp; GetSignatures()=0;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">SavedModelBundle</span>:</span> <span class="keyword">public</span> SavedModelBundleInterface&#123;</span><br><span class="line">    ~SavedModelBundle();</span><br><span class="line">    SavedModelBundle();</span><br><span class="line">    <span class="function">Session* <span class="title">GetSession</span><span class="params">()</span></span>&#123;<span class="keyword">return</span> session.get();&#125;</span><br><span class="line">    protobuf::Map&lt;string, SignatureDef&gt;&amp; GetSignatures()&#123;return meta_graph_def.signature_der();&#125;</span><br><span class="line"></span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Session&gt; session;</span><br><span class="line">    MetaGraphDef meta_graph_def;</span><br><span class="line">    <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;GraphDebugInfo&gt; debug_info;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h4 id="LoaderHarness"><a href="#LoaderHarness" class="headerlink" title="LoaderHarness"></a>LoaderHarness</h4><p>LoaderHarness是对Loader的封装，LoaderHarness负提供Loader的状态跟踪，ServingMap和ManagedMap里面保存的都是LoaderHarness对象，只有通过LoaderHarness才能访问Loader的接口。</p>
+<h3 id="Source"><a href="#Source" class="headerlink" title="Source"></a>Source</h3><p>Source是对Servable的来源的抽象，Source监控外部资源，发现新的模型版本，并通知Target。Source为其提供的Servable的每个可用版本都提供一个Loader实例。</p>
+<p>Source可以是：</p>
+<ul>
+<li>文件系统，本地或者HDFS</li>
+<li>RPC</li>
+</ul>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="keyword">template</span>&lt;<span class="keyword">typename</span> T&gt;</span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Source</span>&#123;</span></span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="keyword">virtual</span> ~Source() = <span class="keyword">default</span>;</span><br><span class="line">    <span class="keyword">using</span> AspiredVersionsCallback = <span class="built_in">std</span>::function&lt;<span class="keyword">void</span>(</span><br><span class="line">      <span class="keyword">const</span> StringPiece servable_name, <span class="built_in">std</span>::<span class="built_in">vector</span>&lt;ServableData&lt;T&gt;&gt; versions)&gt;;</span><br><span class="line">    <span class="comment">// 提供要使用的AspiredVersionCallback</span></span><br><span class="line">    <span class="function"><span class="keyword">virtual</span> <span class="keyword">void</span> <span class="title">SetAspiredVersionsCallback</span><span class="params">(AspiredVersionsCallback callback)</span></span>=<span class="number">0</span>;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">StaticStoragePathSource</span> :</span> <span class="keyword">public</span> Source&lt;StoragePath&gt;&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">static</span> Status <span class="title">Create</span><span class="params">(<span class="keyword">const</span> StaticStoragePathSourceConfig&amp; config,   <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;StaticStoragePathSource&gt;* result)</span></span>&#123;</span><br><span class="line">        <span class="keyword">auto</span> raw_result = <span class="keyword">new</span> StaticStoragePathSource;</span><br><span class="line">        raw_result-&gt;config_ = config;</span><br><span class="line">        result-&gt;reset(raw_result);</span><br><span class="line">        <span class="keyword">return</span> Status::Ok();</span><br><span class="line">    &#125;</span><br><span class="line">    ~StaticStoragePathSource() <span class="keyword">override</span> = <span class="keyword">default</span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">SetAspiredVersionsCallback</span><span class="params">(AspiredVersionsCallback callback)</span></span>&#123;</span><br><span class="line">        <span class="keyword">const</span> ServableId id = &#123;config_.servable_name(), config_.version_num()&#125;;</span><br><span class="line">        LOG(INFO) &lt;&lt; <span class="string">&quot;Aspiring servable&quot;</span> &lt;&lt; id;</span><br><span class="line">        callback(configt_.servable_name(), &#123;CreateServableData(id, confg_.version_path())&#125;);</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    StaticStoragePathSource() = <span class="keyword">default</span>;</span><br><span class="line">    StaticStoragePathSourceConfig config_;</span><br><span class="line">    TF_DISALLOW_COPY_AND_ASSIGN(StaticStoragePathSource);</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">FileSystemStoragePathSource</span> :</span> <span class="keyword">public</span> Source&lt;StoragePath&gt;&#123;</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">static</span> Status <span class="title">Create</span><span class="params">(<span class="keyword">const</span> FileSystemStoragePathSourceConfig&amp; config, <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;FileSystemStoragePathSource&gt;* result)</span></span>;</span><br><span class="line">    </span><br><span class="line">    ~FileSystemStoragePathSource() <span class="keyword">override</span>;</span><br><span class="line">    <span class="function">Status <span class="title">UpdateConfig</span><span class="params">(<span class="keyword">const</span> FileSystemStoragePathSourceConfig&amp; config)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">SetAspiredVersionsCallback</span><span class="params">(AspiredVersionCallback callback)</span> <span class="keyword">override</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">FileSystemStoragePathSource <span class="title">config</span><span class="params">()</span> <span class="keyword">const</span></span>&#123;</span><br><span class="line">        <span class="function">mutex_lock <span class="title">l</span><span class="params">(mu_)</span></span>;</span><br><span class="line">        <span class="keyword">return</span> config_;</span><br><span class="line">    &#125;</span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">friend</span> <span class="class"><span class="keyword">class</span> <span class="title">internal</span>:</span>:FileSystemStoragePathSourceTestAccess;</span><br><span class="line">    FileSystemStoragePathSource() = <span class="keyword">default</span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Status <span class="title">PollFileSystemAndInvokeCallback</span><span class="params">()</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="function">Status <span class="title">UnaspireServables</span><span class="params">(<span class="keyword">const</span> <span class="built_in">std</span>::<span class="built_in">set</span>&lt;<span class="built_in">string</span>&gt;&amp; servable_name)</span> <span class="title">TF_EXCLUSIVE_LOCKS_REQUIRED</span><span class="params">(mu_)</span></span>;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">template</span>&lt;<span class="keyword">typename</span>... Args&gt;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">CallAspiredVersionsCallback</span><span class="params">(Args&amp;&amp;... args)</span></span>&#123;</span><br><span class="line">        ...;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">SetAspiredVersionsCallbackNotifier</span><span class="params">(<span class="built_in">std</span>::function&lt;<span class="keyword">void</span>()&gt; fn)</span> </span>&#123;</span><br><span class="line">    <span class="function">mutex_lock <span class="title">l</span><span class="params">(mu_)</span></span>;</span><br><span class="line">    aspired_versions_callback_notifier_ = fn;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">mutable</span> mutex mu_;</span><br><span class="line">    <span class="function">FileSystemStoragePathSourceConfig config <span class="title">TF_GUARDED_BY</span><span class="params">(mu_)</span></span>;</span><br><span class="line">    <span class="function">AspiredVersionsCallback aspired_versions_callback_ <span class="title">TF_GUARDED_BY</span><span class="params">(mu_)</span></span>;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::function&lt;<span class="title">void</span><span class="params">()</span>&gt; aspired_versions_callback_notifier_ <span class="title">TF_GUARDED_BY</span><span class="params">(mu_)</span></span>;</span><br><span class="line">    <span class="keyword">using</span> ThreadType = absl::variant&lt;absl::monostate, PeriodicFunction, <span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;Thread&gt;&gt;;</span><br><span class="line">    <span class="function"><span class="built_in">std</span>::<span class="built_in">unique_ptr</span>&lt;ThreadType&gt; fs_polling_thread_ <span class="title">TF_GUARDED_BY</span><span class="params">(mu_)</span></span>;</span><br><span class="line">    TF_DISALLOW_COPY_AND_ASSIGN(FileSystemStoragePathSource);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h4 id="Adapter"><a href="#Adapter" class="headerlink" title="Adapter"></a>Adapter</h4><p>Adapter是为了Source转成Loader而引入的抽象，这样server core的实现和具体的平台解耦，server core只需要调用LoaderHarness中的方法管理Servable（访问、加载、卸载等）。</p>
+<h4 id="SourceRouter"><a href="#SourceRouter" class="headerlink" title="SourceRouter"></a>SourceRouter</h4><p>Adapter是平台相关的，每个平台一个Adapter，这里的平台指的是TF、Pytorch等。而Source是与Servable相关的，这样在Adapter和Source之间存在一对多的关系，Router负责维护这些对应关系。（这里似乎有些问题，需要仔细看下）</p>
+<h3 id="ServerCore"><a href="#ServerCore" class="headerlink" title="ServerCore"></a>ServerCore</h3><p>服务系统的创建和维护，建立HTTP REST Server、GRPC Server和模型管理部分(AspiredVersionManger)之间的关系。</p>
+<h3 id="AspiredVersionManager"><a href="#AspiredVersionManager" class="headerlink" title="AspiredVersionManager"></a>AspiredVersionManager</h3><p>模型管理的上层控制部分，负责执行Source发出的模型管理指令，一部分通过回调的方式由Source调用，一部分由独立线程执行。</p>
+<h3 id="BasicManager"><a href="#BasicManager" class="headerlink" title="BasicManager"></a>BasicManager</h3><p>负责Servable的管理，包括加载、卸载、状态查询、资源跟踪，对外提供如下接口：</p>
+<ol>
+<li>ManageServable</li>
+<li>LoadServable</li>
+<li>UnloadServable</li>
+<li>StopManagerServable</li>
+</ol>
+<p>提供接口查询servableHandle(GetUntypeServableHandle)，也就是加载好的模型，供http rest或grpc server调用进行推理。</p>
+<p>所有受管理的servable都放在ManagedMap里，已经正常加载的servable同时也放在ServingMap进行管理，提供查询接口。</p>
+<h3 id="Target"><a href="#Target" class="headerlink" title="Target"></a>Target</h3><p>Target是和Source对应的抽象概念，AspiredVersionManager、Router都是Target。</p>
+<h2 id="模型加载"><a href="#模型加载" class="headerlink" title="模型加载"></a>模型加载</h2><p><code>tensorflow_serving/model_servers/BUILD</code>中配置，可知，<code>tensorflow_model_server</code>的入口位于<code>tensorflow_serving/model_servers/main.cc</code></p>
+<h3 id="大致流程"><a href="#大致流程" class="headerlink" title="大致流程"></a>大致流程</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">int</span> <span class="title">main</span><span class="params">(<span class="keyword">int</span> argc, <span class="keyword">char</span>** argv)</span></span>&#123;</span><br><span class="line">    Options option;</span><br><span class="line">    <span class="built_in">vector</span>&lt;Flag&gt; flag_list;</span><br><span class="line">    <span class="comment">// cmd_line可以指定单个模型，多个模型需要配置config_file</span></span><br><span class="line">    usage = Flags::Usage(argv[<span class="number">0</span>], flag_list);</span><br><span class="line">    <span class="comment">// Usage 使用命令行cmdline返回用法消息，并返回标志flag_list中的用法文本字符串。</span></span><br><span class="line">    Flags::Parse(&amp;argc, argv, flag_list);</span><br><span class="line">    <span class="comment">// Parser 解析cmdline输入参数</span></span><br><span class="line">    port::InitMain(argv[<span class="number">0</span>], &amp;argc, &amp;argv);</span><br><span class="line">    <span class="comment">// InitMain 实现为空，我瞎了？？？？</span></span><br><span class="line">    Server server;</span><br><span class="line">    status = server.BuildAndStart(options);</span><br><span class="line">    server.WaitForTermination();</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">BuildAndStart(options)&#123;</span><br><span class="line">    SOME_CHECK_AND_PROCESS(options);</span><br><span class="line">    ServerCore::Create(move(options), &amp;server_core_);</span><br><span class="line">    ::grpc::ServerBuilder builder;</span><br><span class="line">    builder.AddListeningPort();</span><br><span class="line">    builder.RegeisterService(xxx);</span><br><span class="line">    <span class="comment">//注册服务，model_service/prediction_service/profiler_service</span></span><br><span class="line">    grpc_server = builder.BuildAndStart();</span><br><span class="line">    <span class="comment">// 启动grpc服务 </span></span><br><span class="line">    <span class="keyword">return</span> ;</span><br><span class="line">&#125;</span><br><span class="line"><span class="function">Status <span class="title">ServerCore::Create</span><span class="params">(Options options, ServerCore* servercore)</span></span>&#123;</span><br><span class="line">    options.servable_state_monitor_creator;</span><br><span class="line">    ServerRequestLogger::Create(<span class="literal">nullptr</span>, options.server_request_logger);</span><br><span class="line">    aspired_version_policy = move(options.aspired_version_policy);</span><br><span class="line">    server_core.reset(<span class="keyword">new</span> ServerCore(move(options)));</span><br><span class="line">    (*server_core)-&gt;Initialize(<span class="built_in">std</span>::move(aspired_version_policy));</span><br><span class="line">    <span class="keyword">return</span> (*server_core)-&gt;ReloadConfig(model_server_config);</span><br><span class="line">    <span class="comment">// ReloadConfig 加载模型</span></span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line">Initialize()&#123;</span><br><span class="line">    </span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function">Status <span class="title">ServerCore::ReloadConfig</span><span class="params">(ModelServerConfig&amp; new_config)</span></span>&#123;</span><br><span class="line">    <span class="function">mutex_lock <span class="title">l</span><span class="params">(config_mu)</span></span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+]]></content>
+      <categories>
+        <category>源码阅读</category>
+      </categories>
+      <tags>
+        <tag>tensorflow</tag>
+        <tag>tf serving</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Trie树</title>
+    <url>/61577c10effd/</url>
+    <content><![CDATA[<!--
+ * @Author: JNJYan
+ * @LastEditors: JNJYan
+ * @Email: jjy20140825@gmail.com
+ * @Date: 2021-03-21 11:08:03
+ * @LastEditTime: 2021-03-21 13:28:38
+ * @Description: Modify here please
+ * @FilePath: /blog/source/_posts/2021/03/Trie树.md
+-->
+
+<h2 id="Trie树的定义"><a href="#Trie树的定义" class="headerlink" title="Trie树的定义"></a>Trie树的定义</h2><p>Trie树，又被称为字典树、单词查找树，是一种哈希树变种。常用于统计、排序和保存大量的字符串，如搜索引擎系统中的文本词频统计、拼写的智能补全、字符串排序、最长公共前缀等。优点在于，利用字符串的公共前缀减少查询时间，查找效率比哈希树高。</p>
+<h2 id="Trie树的实现"><a href="#Trie树的实现" class="headerlink" title="Trie树的实现"></a>Trie树的实现</h2><h3 id="Trie树结构"><a href="#Trie树结构" class="headerlink" title="Trie树结构"></a>Trie树结构</h3><p>对于Trie树的每一个节点，应当有一个标志位表示从根节点到当前节点的字符串是否存在，每个节点应当有26个儿子节点（与字符数量相同）。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">TrieNode</span>&#123;</span></span><br><span class="line"><span class="keyword">private</span>:</span><br><span class="line">    <span class="keyword">bool</span> isEnd;</span><br><span class="line">    TrieNode* next[<span class="number">26</span>];</span><br><span class="line"><span class="keyword">public</span>:</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">TrieNode</span><span class="params">()</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">insert</span><span class="params">(<span class="built_in">string</span> str)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">search</span><span class="params">(<span class="built_in">string</span> str)</span></span>;</span><br><span class="line">    <span class="function"><span class="keyword">bool</span> <span class="title">startWith</span><span class="params">(<span class="built_in">string</span> prefix)</span></span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Init"><a href="#Init" class="headerlink" title="Init"></a>Init</h3><p>初始化一个Trie树，树的根节点应为空。</p>
+<figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">TrieNode</span><span class="params">()</span></span>&#123;</span><br><span class="line">    isEnd = <span class="literal">false</span>;</span><br><span class="line">    <span class="built_in">memset</span>(next, <span class="number">0</span>, <span class="keyword">sizeof</span>(next));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Insert"><a href="#Insert" class="headerlink" title="Insert"></a>Insert</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">void</span> <span class="title">insert</span><span class="params">(<span class="built_in">string</span> str)</span></span>&#123;</span><br><span class="line">    Trie* node = <span class="keyword">this</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">char</span> ch: str)&#123;</span><br><span class="line">        <span class="keyword">if</span>(node-&gt;next[ch-<span class="string">&#x27;a&#x27;</span>] == <span class="literal">nullptr</span>)</span><br><span class="line">            node-&gt;next[ch-<span class="string">&#x27;a&#x27;</span>] = <span class="keyword">new</span> Trie();</span><br><span class="line">        node = node-&gt;next[ch-<span class="string">&#x27;a&#x27;</span>];</span><br><span class="line">    &#125;</span><br><span class="line">    node-&gt;isEnd = <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="Search"><a href="#Search" class="headerlink" title="Search"></a>Search</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">search</span><span class="params">(<span class="built_in">string</span> str)</span></span>&#123;</span><br><span class="line">    Trie* node = <span class="keyword">this</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">char</span> ch: str)&#123;</span><br><span class="line">        node = node-&gt;next[ch-<span class="string">&#x27;a&#x27;</span>];</span><br><span class="line">        <span class="keyword">if</span>(node == <span class="literal">nullptr</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> node-&gt;isEnd;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h3 id="StartWith"><a href="#StartWith" class="headerlink" title="StartWith"></a>StartWith</h3><figure class="highlight c++"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">bool</span> <span class="title">StartWith</span><span class="params">(<span class="built_in">string</span> str)</span></span>&#123;</span><br><span class="line">    Trie* node = <span class="keyword">this</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">char</span> ch: str)&#123;</span><br><span class="line">        node = node-&gt;next[ch-<span class="string">&#x27;a&#x27;</span>];</span><br><span class="line">        <span class="keyword">if</span>(node == <span class="literal">nullptr</span>)</span><br><span class="line">            <span class="keyword">return</span> <span class="literal">false</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">true</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<h2 id="哈希树"><a href="#哈希树" class="headerlink" title="哈希树"></a>哈希树</h2><p>哈希树（HashTree）是一种持久性数据结构，用于实现集合和映射。通过质数分辨法建立哈希树，从第二层开始，每层的节点数为连续质数(2,3,5,7…)，从左至右分别为对于该质数的余数。</p>
+]]></content>
+      <categories>
+        <category>算法</category>
+        <category>数据结构</category>
+      </categories>
+      <tags>
+        <tag>哈希</tag>
+        <tag>树</tag>
+      </tags>
+  </entry>
+</search>
